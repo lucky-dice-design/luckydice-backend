@@ -1,0 +1,110 @@
+{
+  "note": "Directus blueprint for Lucky Dice Design. Create these collections and public permissions, or adapt the names if an existing content setup already has matching conventions.",
+  "collections": [
+    {
+      "collection": "site_settings",
+      "type": "singleton",
+      "fields": [
+        { "field": "site_name", "type": "string", "required": true },
+        { "field": "footer_note", "type": "text" },
+        { "field": "email", "type": "string" },
+        { "field": "instagram", "type": "string" }
+      ]
+    },
+    {
+      "collection": "navigation_items",
+      "fields": [
+        { "field": "label", "type": "string", "required": true },
+        { "field": "url", "type": "string", "required": true },
+        { "field": "sort", "type": "integer" },
+        { "field": "status", "type": "string", "default": "published" }
+      ]
+    },
+    {
+      "collection": "pages",
+      "fields": [
+        { "field": "slug", "type": "string", "required": true, "unique": true },
+        { "field": "status", "type": "string", "default": "published" },
+        { "field": "meta_title", "type": "string" },
+        { "field": "meta_description", "type": "text" },
+        { "field": "title", "type": "text" },
+        { "field": "text", "type": "text" },
+        { "field": "legal_body", "type": "text" },
+        { "field": "hero_title", "type": "text" },
+        { "field": "hero_text", "type": "text" },
+        { "field": "intro_title", "type": "text" },
+        { "field": "intro_text", "type": "text" }
+      ]
+    },
+    {
+      "collection": "services",
+      "fields": [
+        { "field": "status", "type": "string", "default": "published" },
+        { "field": "sort", "type": "integer" },
+        { "field": "number", "type": "string" },
+        { "field": "title", "type": "string", "required": true },
+        { "field": "text", "type": "text" }
+      ]
+    },
+    {
+      "collection": "projects",
+      "fields": [
+        { "field": "status", "type": "string", "default": "published" },
+        { "field": "sort", "type": "integer" },
+        { "field": "title", "type": "string", "required": true },
+        { "field": "type", "type": "string" },
+        { "field": "year", "type": "string" },
+        { "field": "text", "type": "text" },
+        { "field": "highlight", "type": "boolean", "default": false }
+      ]
+    },
+    {
+      "collection": "about_facts",
+      "fields": [
+        { "field": "sort", "type": "integer" },
+        { "field": "label", "type": "string", "required": true },
+        { "field": "value", "type": "string", "required": true }
+      ]
+    },
+    {
+      "collection": "process_steps",
+      "fields": [
+        { "field": "sort", "type": "integer" },
+        { "field": "title", "type": "string", "required": true },
+        { "field": "text", "type": "text" }
+      ]
+    },
+    {
+      "collection": "contact_channels",
+      "fields": [
+        { "field": "sort", "type": "integer" },
+        { "field": "label", "type": "string", "required": true },
+        { "field": "value", "type": "string", "required": true },
+        { "field": "url", "type": "string", "required": true }
+      ]
+    },
+    {
+      "collection": "contact_submissions",
+      "fields": [
+        { "field": "status", "type": "string", "default": "new" },
+        { "field": "name", "type": "string", "required": true },
+        { "field": "email", "type": "string", "required": true },
+        { "field": "project_type", "type": "string" },
+        { "field": "message", "type": "text", "required": true },
+        { "field": "source", "type": "string" },
+        { "field": "internal_notes", "type": "text" }
+      ]
+    }
+  ],
+  "public_role_permissions": [
+    { "collection": "site_settings", "action": "read" },
+    { "collection": "navigation_items", "action": "read", "filter": { "status": { "_eq": "published" } } },
+    { "collection": "pages", "action": "read", "filter": { "status": { "_eq": "published" } } },
+    { "collection": "services", "action": "read", "filter": { "status": { "_eq": "published" } } },
+    { "collection": "projects", "action": "read", "filter": { "status": { "_eq": "published" } } },
+    { "collection": "about_facts", "action": "read" },
+    { "collection": "process_steps", "action": "read" },
+    { "collection": "contact_channels", "action": "read" },
+    { "collection": "contact_submissions", "action": "create" }
+  ]
+}

@@ -1,0 +1,8 @@
+/var/log/luckydice-content.log {
+    weekly
+    rotate 8
+    compress
+    missingok
+    notifempty
+    copytruncate
+}

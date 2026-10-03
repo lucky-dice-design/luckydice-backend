@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+secrets/
+database/
+uploads/
+*.log

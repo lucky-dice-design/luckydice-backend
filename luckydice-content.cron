@@ -1,0 +1,3 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+*/5 * * * * root /bin/bash /opt/luckydicedesign/backend/sync-content.sh >> /var/log/luckydice-content.log 2>&1

@@ -1,0 +1,7 @@
+* text=auto
+*.sh text eol=lf
+*.mjs text eol=lf
+*.yaml text eol=lf
+*.cron text eol=lf
+*.logrotate text eol=lf
+Caddyfile* text eol=lf

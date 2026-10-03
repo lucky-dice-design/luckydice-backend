@@ -1,0 +1,15 @@
+
+luckydicedesign.de, www.luckydicedesign.de, luckydicedesign.com, www.luckydicedesign.com {
+  encode zstd gzip
+  header {
+    -Server
+    X-Content-Type-Options nosniff
+    Referrer-Policy strict-origin-when-cross-origin
+  }
+  reverse_proxy luckydice-website:3000
+}
+
+admin.luckydicedesign.de {
+  encode zstd gzip
+  reverse_proxy luckydice-directus:8055
+}
