@@ -51,6 +51,18 @@ contact placeholders that should be edited in Directus before launch.
 
 ## Legal Pages
 
+## Project Detail Pages
+
+In `projects`, set `slug` (for example `himmelsteil`), `website_url` and
+`detail_body`. Detail URLs are `/work/<slug>/`. Existing projects receive a
+unique slug on setup; existing slugs and descriptions are retained. Blank
+website URLs hide the external link. Only published projects are served;
+unknown slugs return HTTP 404. During a CMS outage, routes use the last
+successful cron export. The website container is recreated on deployment
+so its routing changes are loaded.
+
+## Legal Page Content
+
 In Directus, edit `pages` with slugs `impressum` and `datenschutz`.
 The `title`, `text`, `legal_body`, `meta_title` and `meta_description` fields
 control their content. `legal_body` is plain text with preserved line breaks;

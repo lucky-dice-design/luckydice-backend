@@ -2,6 +2,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
+import { pathToFileURL } from 'node:url';
 
 const root = process.env.SITE_ROOT || '/app/site';
 const tokenPath = process.env.TOKEN_PATH || '/app/contact_token';
@@ -59,6 +60,23 @@ http.createServer(async (req, res) => {
     const file = path.resolve(root, '.' + decodeURIComponent(url.pathname));
     if (file !== root && !file.startsWith(root + path.sep)) return reply(res, 404, { error: 'Not found' });
     let target = file;
+    const projectRoute = url.pathname.match(/^\/work\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/);
+    if (projectRoute) {
+      let project;
+      try {
+        const result = await forward(`/items/projects?filter[slug][_eq]=${encodeURIComponent(projectRoute[1])}&filter[status][_eq]=published&limit=1`);
+        if (!result.ok) throw new Error('CMS unavailable');
+        const payload = await result.json();
+        if (!Array.isArray(payload.data)) throw new Error('Invalid CMS response');
+        project = payload.data[0];
+      } catch {
+        const contentFile = path.join(root, 'assets/content.js');
+        const snapshot = await import(`${pathToFileURL(contentFile).href}?version=${fs.statSync(contentFile).mtimeMs}`);
+        project = snapshot.fallbackContent.projects.find(item => item.slug === projectRoute[1]);
+      }
+      if (!project) return reply(res, 404, { error: 'Project not found' });
+      target = path.join(root, 'work/project/index.html');
+    }
     if (fs.existsSync(target) && fs.statSync(target).isDirectory()) target = path.join(target, 'index.html');
     if (!fs.existsSync(target) || !fs.statSync(target).isFile()) return reply(res, 404, { error: 'Not found' });
     res.writeHead(200, { 'Content-Type': types[path.extname(target)] || 'application/octet-stream', 'Content-Length': fs.statSync(target).size });

@@ -36,7 +36,12 @@ for (const definition of schema.collections) {
     if (fields.has(field.field)) continue;
     await api(`/fields/${name}`, 'POST', {
       field: field.field, type: field.type,
-      meta: { interface: field.type === 'text' ? 'input-multiline' : field.type === 'boolean' ? 'boolean' : 'input', required: Boolean(field.required) },
+      meta: {
+        interface: field.type === 'text' ? 'input-multiline' : field.type === 'boolean' ? 'boolean' : 'input', required: Boolean(field.required),
+        ...(name === 'projects' && field.field === 'slug' ? { note: 'URL-Kennung, z. B. himmelsteil. Nur Kleinbuchstaben, Zahlen und Bindestriche; ergibt /work/himmelsteil/.' } : {}),
+        ...(name === 'projects' && field.field === 'website_url' ? { note: 'Vollständige Projektwebsite mit https://. Leer lassen, um den externen Link auszublenden.' } : {}),
+        ...(name === 'projects' && field.field === 'detail_body' ? { note: 'Ausführliche Projektbeschreibung; Absätze mit Leerzeilen trennen.' } : {}),
+      },
       schema: { ...(field.default === undefined ? {} : { default_value: field.default }), ...(field.unique ? { is_unique: true } : {}) },
     });
   }
@@ -48,6 +53,16 @@ for (const definition of schema.collections) {
     const known = new Set((await api('/items/pages?fields=slug&limit=-1')).map(page => page.slug));
     for (const page of seeds.pages) if (!known.has(page.slug)) await api('/items/pages', 'POST', page);
   } else if (!current.length) await api(`/items/${name}`, 'POST', seeds[name]);
+}
+const projects = await api('/items/projects?fields=id,title,slug&limit=-1');
+const usedSlugs = new Set(projects.map(project => project.slug).filter(Boolean));
+for (const project of projects) {
+  if (project.slug) continue;
+  const baseSlug = (project.title || 'projekt').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 180) || 'projekt';
+  let slug = baseSlug;
+  if (usedSlugs.has(slug)) slug = `${baseSlug}-${project.id}`;
+  usedSlugs.add(slug);
+  await api(`/items/projects/${project.id}`, 'PATCH', { slug });
 }
 // Keep the confirmed company mailbox in sync for installations seeded earlier.
 const companyEmail = seeds.site_settings.email;

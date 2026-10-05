@@ -66,7 +66,7 @@ docker compose cp seed.json luckydice-cms:/tmp/lucky-seed.json
 docker compose exec -T -u root -e SCHEMA_PATH=/tmp/lucky-schema.json -e SEED_PATH=/tmp/lucky-seed.json luckydice-cms node /tmp/lucky-setup.mjs
 chown 1000:1000 secrets/contact_token
 chmod 0640 secrets/contact_token
-docker compose up -d website
+docker compose up -d --no-deps --force-recreate website
 for attempt in $(seq 1 20); do
   if docker compose exec -T website node -e "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" >/dev/null 2>&1; then break; fi
   sleep 1

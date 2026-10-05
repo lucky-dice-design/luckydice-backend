@@ -11,11 +11,21 @@ import { fileURLToPath } from 'node:url';
 test('gateway restricts contact fields and protects stored requests', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lucky-test-'));
   fs.writeFileSync(path.join(tmp, 'token'), 'test-server-token');
+  fs.mkdirSync(path.join(tmp, 'work/project'), { recursive: true });
+  fs.mkdirSync(path.join(tmp, 'assets'), { recursive: true });
+  fs.writeFileSync(path.join(tmp, 'work/project/index.html'), '<h1>Project template</h1>');
+  fs.writeFileSync(path.join(tmp, 'assets/content.js'), 'export const fallbackContent = { projects: [{ slug: "offline-project", title: "Offline project" }] };');
   const writes = [];
   const upstream = http.createServer(async (req, res) => {
     assert.equal(req.headers.authorization, 'Bearer test-server-token');
     let raw = ''; for await (const chunk of req) raw += chunk;
     if (req.method === 'POST') { assert.equal(req.url, '/items/contact_submissions?fields=id'); writes.push(JSON.parse(raw)); }
+    if (req.url.startsWith('/items/projects?')) {
+      const slug = new URL(req.url, 'http://test').searchParams.get('filter[slug][_eq]');
+      if (slug === 'offline-project') { res.writeHead(503); return res.end(); }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ data: slug === 'test-project' ? [{ slug, title: 'Test project' }] : [] }));
+    }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ data: { id: 1, site_name: 'Lucky Dice' } }));
   }).listen(0, '127.0.0.1');
@@ -25,16 +35,18 @@ test('gateway restricts contact fields and protects stored requests', async () =
   const port = reservation.address().port;
   await new Promise(resolve => reservation.close(resolve));
   const child = spawn(process.execPath, [fileURLToPath(new URL('./server.mjs', import.meta.url))], {
-    env: { ...process.env, PORT: String(port), DIRECTUS_URL: `http://127.0.0.1:${upstream.address().port}`, TOKEN_PATH: path.join(tmp, 'token'), SITE_ROOT: tmp }, stdio: 'ignore',
+    env: { ...process.env, PORT: String(port), DIRECTUS_URL: `http://127.0.0.1:${upstream.address().port}`, TOKEN_PATH: path.join(tmp, 'token'), SITE_ROOT: tmp }, stdio: ['ignore', 'ignore', 'pipe'],
   });
+  let startupErrors = '';
+  child.stderr.on('data', chunk => { startupErrors += chunk; });
   const base = `http://127.0.0.1:${port}`;
   try {
     let ready = false;
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 200; i++) {
       try { if ((await fetch(base + '/health')).ok) { ready = true; break; } } catch {}
       await new Promise(resolve => setTimeout(resolve, 50));
     }
-    assert.ok(ready);
+    assert.ok(ready, startupErrors || 'Gateway did not start');
     const submit = (origin, body) => fetch(base + '/cms/items/contact_submissions', { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     assert.equal((await submit('https://attacker.example', {})).status, 403);
     assert.equal((await submit('https://luckydicedesign.de', {})).status, 400);
@@ -44,6 +56,9 @@ test('gateway restricts contact fields and protects stored requests', async () =
     assert.equal(writes[0].internal_notes, undefined);
     assert.equal((await fetch(base + '/cms/items/contact_submissions')).status, 404);
     assert.equal((await fetch(base + '/cms/items/site_settings')).status, 200);
+    assert.equal((await fetch(base + '/work/test-project/')).status, 200);
+    assert.equal((await fetch(base + '/work/missing-project/')).status, 404);
+    assert.equal((await fetch(base + '/work/offline-project/')).status, 200);
     assert.ok(!(await (await fetch(base + '/assets/config.js')).text()).includes('test-server-token'));
   } finally {
     if (child.exitCode === null && child.signalCode === null) { child.kill(); await once(child, 'exit'); }

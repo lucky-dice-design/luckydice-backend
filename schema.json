@@ -49,6 +49,9 @@
     {
       "collection": "projects",
       "fields": [
+        { "field": "slug", "type": "string", "required": true, "unique": true },
+        { "field": "website_url", "type": "string" },
+        { "field": "detail_body", "type": "text" },
         { "field": "status", "type": "string", "default": "published" },
         { "field": "sort", "type": "integer" },
         { "field": "title", "type": "string", "required": true },
