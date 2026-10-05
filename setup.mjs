@@ -41,6 +41,8 @@ for (const definition of schema.collections) {
         ...(name === 'projects' && field.field === 'slug' ? { note: 'URL-Kennung, z. B. himmelsteil. Nur Kleinbuchstaben, Zahlen und Bindestriche; ergibt /work/himmelsteil/.' } : {}),
         ...(name === 'projects' && field.field === 'website_url' ? { note: 'Vollständige Projektwebsite mit https://. Leer lassen, um den externen Link auszublenden.' } : {}),
         ...(name === 'projects' && field.field === 'detail_body' ? { note: 'Ausführliche Projektbeschreibung; Absätze mit Leerzeilen trennen.' } : {}),
+        ...(name === 'projects' && field.field === 'screenshot' ? { interface: 'file-image', special: ['file'], note: 'Website-Screenshot als PNG, JPEG, WebP oder AVIF hochladen.' } : {}),
+        ...(name === 'projects' && field.field === 'screenshot_alt' ? { note: 'Kurze Bildbeschreibung des Website-Screenshots.' } : {}),
       },
       schema: { ...(field.default === undefined ? {} : { default_value: field.default }), ...(field.unique ? { is_unique: true } : {}) },
     });
@@ -53,6 +55,14 @@ for (const definition of schema.collections) {
     const known = new Set((await api('/items/pages?fields=slug&limit=-1')).map(page => page.slug));
     for (const page of seeds.pages) if (!known.has(page.slug)) await api('/items/pages', 'POST', page);
   } else if (!current.length) await api(`/items/${name}`, 'POST', seeds[name]);
+}
+const fileFields = await api('/fields/directus_files');
+if (!fileFields.some(field => field.field === 'lucky_project_screenshots')) {
+  await api('/fields/directus_files', 'POST', { field: 'lucky_project_screenshots', type: 'alias', meta: { special: ['o2m'], interface: 'list-o2m', hidden: true } });
+}
+const screenshotRelation = (await api('/relations/projects')).find(relation => relation.field === 'screenshot');
+if (!screenshotRelation) {
+  await api('/relations', 'POST', { collection: 'projects', field: 'screenshot', related_collection: 'directus_files', meta: { one_field: 'lucky_project_screenshots', one_deselect_action: 'nullify' }, schema: { on_delete: 'SET NULL' } });
 }
 const projects = await api('/items/projects?fields=id,title,slug&limit=-1');
 const usedSlugs = new Set(projects.map(project => project.slug).filter(Boolean));
@@ -91,6 +101,14 @@ for (const definition of schema.collections) {
     ...(contact ? { presets: { status: 'new' } } : {}),
   });
 }
+const fileGrant = grants.find(item => item.collection === 'directus_files' && item.action === 'read');
+await api(fileGrant ? `/permissions/${fileGrant.id}` : '/permissions', fileGrant ? 'PATCH' : 'POST', {
+  policy: policy.id, collection: 'directus_files', action: 'read', fields: ['*'],
+  permissions: { _and: [
+    { type: { _in: ['image/png', 'image/jpeg', 'image/webp', 'image/avif'] } },
+    { lucky_project_screenshots: { _some: { status: { _eq: 'published' } } } },
+  ] },
+});
 if (!grants.some(item => item.collection === 'contact_submissions' && item.action === 'read')) {
   await api('/permissions', 'POST', { policy: policy.id, collection: 'contact_submissions', action: 'read', fields: ['id'], permissions: null });
 }

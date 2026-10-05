@@ -61,6 +61,13 @@ unknown slugs return HTTP 404. During a CMS outage, routes use the last
 successful cron export. The website container is recreated on deployment
 so its routing changes are loaded.
 
+Upload a PNG, JPEG, WebP or AVIF via `projects.screenshot` and describe it with
+`screenshot_alt`. The frontend uses the same-origin `/cms/assets/<id>` gateway;
+service tokens are never included in image URLs. The file read policy only
+allows images referenced by a published project. Draft or unrelated files stay
+private. The screenshot remains in its original aspect ratio and can be opened
+at its original size.
+
 ## Legal Page Content
 
 In Directus, edit `pages` with slugs `impressum` and `datenschutz`.

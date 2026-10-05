@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { pathToFileURL } from 'node:url';
+import { Readable } from 'node:stream';
 
 const root = process.env.SITE_ROOT || '/app/site';
 const tokenPath = process.env.TOKEN_PATH || '/app/contact_token';
@@ -28,6 +29,17 @@ http.createServer(async (req, res) => {
       return res.end('window.LDD_CONFIG = { directusUrl: "/cms", directusToken: "" };');
     }
     const match = url.pathname.match(/^\/cms\/items\/([a-z_]+)$/);
+    const asset = url.pathname.match(/^\/cms\/assets\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i);
+    if (['GET', 'HEAD'].includes(req.method) && asset) {
+      const result = await forward(`/assets/${asset[1]}`);
+      if (!result.ok) return reply(res, result.status === 403 ? 404 : result.status, { error: 'Screenshot unavailable' });
+      const mime = result.headers.get('content-type')?.split(';')[0];
+      if (!['image/png', 'image/jpeg', 'image/webp', 'image/avif'].includes(mime)) return reply(res, 415, { error: 'Unsupported screenshot format' });
+      res.writeHead(200, { 'Content-Type': mime, 'Cache-Control': 'public, max-age=60', 'X-Content-Type-Options': 'nosniff' });
+      if (req.method === 'HEAD') { await result.body.cancel(); return res.end(); }
+      await pipeline(Readable.fromWeb(result.body), res);
+      return;
+    }
     if (req.method === 'GET' && match && collections.has(match[1])) {
       const result = await forward(`/items/${match[1]}${url.search}`);
       res.writeHead(result.status, { 'Content-Type': 'application/json' });

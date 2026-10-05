@@ -19,6 +19,13 @@ test('gateway restricts contact fields and protects stored requests', async () =
   const upstream = http.createServer(async (req, res) => {
     assert.equal(req.headers.authorization, 'Bearer test-server-token');
     let raw = ''; for await (const chunk of req) raw += chunk;
+    if (req.url.startsWith('/assets/')) {
+      if (req.url === '/assets/11111111-1111-4111-8111-111111111111') {
+        res.writeHead(200, { 'Content-Type': 'image/png' });
+        return res.end(Buffer.from('89504e470d0a1a0a', 'hex'));
+      }
+      res.writeHead(403); return res.end();
+    }
     if (req.method === 'POST') { assert.equal(req.url, '/items/contact_submissions?fields=id'); writes.push(JSON.parse(raw)); }
     if (req.url.startsWith('/items/projects?')) {
       const slug = new URL(req.url, 'http://test').searchParams.get('filter[slug][_eq]');
@@ -59,6 +66,11 @@ test('gateway restricts contact fields and protects stored requests', async () =
     assert.equal((await fetch(base + '/work/test-project/')).status, 200);
     assert.equal((await fetch(base + '/work/missing-project/')).status, 404);
     assert.equal((await fetch(base + '/work/offline-project/')).status, 200);
+    const image = await fetch(base + '/cms/assets/11111111-1111-4111-8111-111111111111');
+    assert.equal(image.status, 200);
+    assert.equal(image.headers.get('content-type'), 'image/png');
+    assert.equal(Buffer.from(await image.arrayBuffer()).toString('hex'), '89504e470d0a1a0a');
+    assert.equal((await fetch(base + '/cms/assets/22222222-2222-4222-8222-222222222222')).status, 404);
     assert.ok(!(await (await fetch(base + '/assets/config.js')).text()).includes('test-server-token'));
   } finally {
     if (child.exitCode === null && child.signalCode === null) { child.kill(); await once(child, 'exit'); }
