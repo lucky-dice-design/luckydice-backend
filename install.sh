@@ -16,7 +16,7 @@ cp -a "$release/frontend/dist/." "$target/frontend/dist/"
 # Normalize only public static files, leaving backend credentials untouched.
 find "$target/frontend/dist" -type d -exec chmod 0755 {} +
 find "$target/frontend/dist" -type f -exec chmod 0644 {} +
-for file in compose.yaml setup.mjs server.mjs schema.json seed.json Caddyfile.luckydice; do
+for file in compose.yaml setup.mjs setup-collection-navigation.mjs server.mjs schema.json seed.json Caddyfile.luckydice; do
   install -m 0644 "$release/backend/$file" "$target/backend/$file"
 done
 cd "$target/backend"
@@ -65,6 +65,7 @@ if [ "$ready" != true ]; then
 fi
 # A running file bind mount can retain the previous inode after install replaces it.
 docker compose cp setup.mjs luckydice-cms:/tmp/lucky-setup.mjs
+docker compose cp setup-collection-navigation.mjs luckydice-cms:/tmp/setup-collection-navigation.mjs
 docker compose cp schema.json luckydice-cms:/tmp/lucky-schema.json
 docker compose cp seed.json luckydice-cms:/tmp/lucky-seed.json
 docker compose exec -T -u root -e SCHEMA_PATH=/tmp/lucky-schema.json -e SEED_PATH=/tmp/lucky-seed.json luckydice-cms node /tmp/lucky-setup.mjs

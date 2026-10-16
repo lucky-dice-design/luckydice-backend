@@ -40,6 +40,7 @@ services:
     volumes:
       - uploads:/directus/uploads
       - ./setup.mjs:/opt/lucky/setup.mjs:ro
+      - ./setup-collection-navigation.mjs:/opt/lucky/setup-collection-navigation.mjs:ro
       - ./schema.json:/opt/lucky/schema.json:ro
       - ./seed.json:/opt/lucky/seed.json:ro
       - ./secrets:/opt/lucky/secrets

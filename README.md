@@ -1,5 +1,9 @@
 # VPS Deployment
 
+Die gruppierte Directus-Navigation mit Anzeigenamen und Icons ist in
+[COLLECTIONS.md](COLLECTIONS.md) beschrieben. Das reguläre Setup aktualisiert
+sie auch für bereits vorhandene Collections.
+
 The installation uses the existing Himmelsteil Caddy container and its web network.
 Lucky Dice has its own PostgreSQL database, Directus instance and website service.
 Nothing is cloned from GitHub on the VPS. Files are uploaded by SSH.
@@ -113,3 +117,7 @@ curl -fsSI https://luckydicedesign.de/
 
 No restart is required. Do not apply these permissions to the backend,
 .env, or secrets.
+
+## Automatisches VPS-Deployment
+
+Prüfungen und Deployment per GitHub Actions sind unter [deploy/README.md](deploy/README.md) beschrieben. Die einmalige Einrichtung auf GitHub und dem VPS ist vor der Aktivierung erforderlich.

@@ -1,0 +1,127 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import fs from "node:fs";
+import { applyCollectionNavigation, navigationGroups } from "./setup-collection-navigation.mjs";
+
+const names = navigationGroups.flatMap((group) => group.children.map(([name]) => name));
+const quiet = { log() {} };
+
+function fixture() {
+  const collections = names.map((collection) => ({
+    collection, schema: { name: collection },
+    meta: {
+      icon: "old_icon", hidden: collection.includes("request") || collection.includes("submission"),
+      singleton: collection === "home_page" || collection === "site_settings",
+      sort_field: "sort", note: "Existing editorial note", color: "#123456",
+      translations: [
+        { language: "fr-FR", translation: "Keep French" },
+        { language: "de-DE", translation: "Old title", singular: "Keep singular", plural: "Keep plural" },
+      ],
+    },
+  }));
+  collections.push({ collection: "custom_collection", schema: {}, meta: { icon: "star", group: null } });
+  const calls = [];
+  const request = async (path, method = "GET", body) => {
+    calls.push({ path, method, body: structuredClone(body) });
+    if (path === "/collections" && method === "GET") return structuredClone(collections);
+    if (path === "/collections" && method === "POST") {
+      assert.equal(body.schema, null, "Only virtual folders may be created");
+      assert.ok(!collections.some((item) => item.collection === body.collection));
+      collections.push(structuredClone(body));
+      return;
+    }
+    assert.equal(method, "PATCH");
+    assert.match(path, /^\/collections\/[a-z_]+$/);
+    assert.deepEqual(Object.keys(body), ["meta"]);
+    const item = collections.find((item) => item.collection === path.split("/").at(-1));
+    assert.ok(item);
+    Object.assign(item.meta, structuredClone(body.meta));
+  };
+  return { collections, calls, request };
+}
+
+test("organizes existing collections without changing content metadata or unrelated collections", async () => {
+  const state = fixture();
+  const original = structuredClone(state.collections);
+  await applyCollectionNavigation(state.request, quiet);
+  assert.equal(state.calls.filter((call) => call.method === "POST").length, navigationGroups.length);
+  for (const [groupIndex, group] of navigationGroups.entries()) {
+    const folder = state.collections.find((item) => item.collection === group.collection);
+    assert.equal(folder.schema, null);
+    assert.equal(folder.meta.sort, groupIndex + 1);
+    assert.equal(folder.meta.icon, group.icon);
+    assert.equal(folder.meta.group, null);
+    for (const [index, [name, label, icon]] of group.children.entries()) {
+      const collection = state.collections.find((item) => item.collection === name);
+      const before = original.find((item) => item.collection === name);
+      assert.equal(collection.meta.group, group.collection);
+      assert.equal(collection.meta.icon, icon);
+      assert.equal(collection.meta.sort, index + 1);
+      assert.deepEqual(collection.schema, before.schema);
+      for (const key of ["hidden", "singleton", "sort_field", "note", "color"]) {
+        assert.deepEqual(collection.meta[key], before.meta[key], key);
+      }
+      assert.deepEqual(collection.meta.translations.find((item) => item.language === "de-DE"), {
+        language: "de-DE", translation: label, singular: "Keep singular", plural: "Keep plural",
+      });
+      assert.equal(collection.meta.translations.find((item) => item.language === "fr-FR").translation, "Keep French");
+    }
+  }
+  assert.deepEqual(state.collections.find((item) => item.collection === "custom_collection"), original.at(-1));
+});
+
+test("rerunning is a no-op and preserves the existing folder display preference", async () => {
+  const state = fixture();
+  await applyCollectionNavigation(state.request, quiet);
+  const folder = state.collections.find((item) => item.collection === navigationGroups[0].collection);
+  folder.meta.collapse = "closed";
+  folder.meta.color = "#abcdef";
+  state.calls.length = 0;
+  const result = await applyCollectionNavigation(state.request, quiet);
+  assert.deepEqual(result.operations, []);
+  assert.deepEqual(state.calls.map((call) => call.method), ["GET"]);
+  assert.equal(folder.meta.collapse, "closed");
+  assert.equal(folder.meta.color, "#abcdef");
+});
+
+test("dry-run does not write any metadata", async () => {
+  const state = fixture();
+  const before = structuredClone(state.collections);
+  const result = await applyCollectionNavigation(state.request, { ...quiet, dryRun: true });
+  assert.ok(result.operations.length > 0);
+  assert.deepEqual(state.calls.map((call) => call.method), ["GET"]);
+  assert.deepEqual(state.collections, before);
+});
+
+test("a reserved group name occupied by a real table stops all writes", async () => {
+  const state = fixture();
+  const collection = navigationGroups.at(-1).collection;
+  state.collections.push({ collection, schema: { name: collection }, meta: {} });
+  await assert.rejects(applyCollectionNavigation(state.request, quiet), /durch eine Datentabelle belegt/);
+  assert.deepEqual(state.calls.map((call) => call.method), ["GET"]);
+});
+
+test("a content name occupied by a folder stops all writes", async () => {
+  const state = fixture();
+  state.collections[0].schema = null;
+  await assert.rejects(applyCollectionNavigation(state.request, quiet), /keine Datentabelle/);
+  assert.deepEqual(state.calls.map((call) => call.method), ["GET"]);
+});
+
+test("incremental installs skip missing modules without creating empty folders", async () => {
+  const state = fixture();
+  const absent = navigationGroups.at(-1);
+  for (const [name] of absent.children) {
+    state.collections.splice(state.collections.findIndex((item) => item.collection === name), 1);
+  }
+  const result = await applyCollectionNavigation(state.request, quiet);
+  assert.deepEqual(result.skipped, absent.children.map(([name]) => name));
+  assert.ok(!state.collections.some((item) => item.collection === absent.collection));
+  assert.ok(!state.calls.some((call) => call.body?.schema && call.method === "POST"));
+});
+
+test("navigation covers each content collection in the schema exactly once", () => {
+  const schema = JSON.parse(fs.readFileSync(new URL("./schema.json", import.meta.url), "utf8"));
+  assert.equal(names.length, new Set(names).size);
+  assert.deepEqual([...names].sort(), schema.collections.map((item) => item.collection).sort());
+});
