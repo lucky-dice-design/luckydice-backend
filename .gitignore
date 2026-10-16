@@ -5,3 +5,4 @@ secrets/
 database/
 uploads/
 *.log
+.openai/
