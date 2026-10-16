@@ -5,7 +5,7 @@ Lucky Dice has its own PostgreSQL database, Directus instance and website servic
 Nothing is cloned from GitHub on the VPS. Files are uploaded by SSH.
 
 This repository contains the backend release files. The static frontend is
-maintained in `MrJoky/luckydice-frontend`. Real `.env` files, uploaded files,
+maintained in `lucky-dice-design/luckydice-frontend`. Real `.env` files, uploaded files,
 database storage and service keys are excluded from Git.
 
 Upload this directory as `backend` and the website `dist` as `frontend/dist`
@@ -93,3 +93,7 @@ sudo bash /home/timo/luckydice-release/backend/install-sync.sh
 
 This performs the first sync before enabling `/etc/cron.d/luckydice-content`.
 Logs are in `/var/log/luckydice-content.log` and rotate weekly.
+
+## Automatisches VPS-Deployment
+
+Prüfungen und Deployment per GitHub Actions sind unter [deploy/README.md](deploy/README.md) beschrieben. Die einmalige Einrichtung auf GitHub und dem VPS ist vor der Aktivierung erforderlich.

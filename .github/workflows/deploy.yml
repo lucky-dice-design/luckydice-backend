@@ -1,0 +1,78 @@
+name: Check and deploy VPS
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test server.test.mjs
+      - name: Check release files
+        run: |
+          for file in *.mjs; do node --check "$file"; done
+          for file in *.sh; do bash -n "$file"; done
+          node -e "for (const f of ['schema.json','seed.json']) JSON.parse(require('node:fs').readFileSync(f))"
+      - name: Check deployment script
+        run: |
+          for file in deploy/*.sh; do bash -n "$file"; done
+
+  deploy:
+    needs: check
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    concurrency:
+      group: vps-deploy-${{ github.repository }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          test -n "$SSH_KEY" && test -n "$KNOWN_HOSTS"
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 0600 ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Upload and deploy verified revision
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_USER: ${{ vars.VPS_USER }}
+          VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+          REVISION: ${{ github.sha }}
+          BRANCH_REF: ${{ github.ref }}
+        run: |
+          test -n "$VPS_HOST" && test -n "$VPS_USER"
+          [[ "$VPS_HOST" =~ ^[a-zA-Z0-9.-]+$ ]]
+          [[ "$VPS_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
+          [[ "$VPS_PORT" =~ ^[0-9]+$ ]]
+          [[ "$REVISION" =~ ^[0-9a-f]{40}$ ]]
+          current=$(git ls-remote origin "$BRANCH_REF" | cut -f1)
+          if [[ "$current" != "$REVISION" ]]; then
+            echo "Skipping superseded revision $REVISION"
+            exit 0
+          fi
+          archive="${RUNNER_TEMP}/release.tar.gz"
+          git archive --format=tar.gz --output="$archive" "$REVISION"
+          destination="$VPS_USER@$VPS_HOST"
+          options=(-o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
+          ssh "${options[@]}" -p "$VPS_PORT" "$destination" "mkdir -p ~/deploy-incoming/luckydice-backend/$REVISION"
+          scp "${options[@]}" -P "$VPS_PORT" "$archive" "$destination:deploy-incoming/luckydice-backend/$REVISION/release.tar.gz"
+          ssh "${options[@]}" -p "$VPS_PORT" "$destination" "sudo -n /usr/local/sbin/deploy-luckydice-backend $REVISION"
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
