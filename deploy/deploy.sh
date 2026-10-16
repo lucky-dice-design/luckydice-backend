@@ -89,7 +89,7 @@ gzip -t "$snapshot/database.sql.gz"
 # Archive the actual mounted uploads, independent of Compose volume naming.
 docker compose exec -T luckydice-cms tar -czf - -C /directus/uploads . > "$snapshot/uploads.tar.gz"
 tar -tzf "$snapshot/uploads.tar.gz" > /dev/null
-for file in compose.yaml setup.mjs server.mjs schema.json seed.json Caddyfile.luckydice sync-content.sh sync-content.mjs; do
+for file in compose.yaml setup.mjs setup-collection-navigation.mjs server.mjs schema.json seed.json Caddyfile.luckydice sync-content.sh sync-content.mjs; do
   install -m 0644 "$src/$file" "$target/$file"
 done
 docker compose config --quiet
@@ -104,6 +104,7 @@ done
 [[ $ready == true ]] || { echo 'Directus startup check failed.' >&2; exit 1; }
 # Existing noninteractive, additive schema/permission setup. Credentials remain in .env.
 docker compose cp setup.mjs luckydice-cms:/tmp/lucky-setup.mjs
+docker compose cp setup-collection-navigation.mjs luckydice-cms:/tmp/setup-collection-navigation.mjs
 docker compose cp schema.json luckydice-cms:/tmp/lucky-schema.json
 docker compose cp seed.json luckydice-cms:/tmp/lucky-seed.json
 docker compose exec -T -u root -e SCHEMA_PATH=/tmp/lucky-schema.json -e SEED_PATH=/tmp/lucky-seed.json luckydice-cms node /tmp/lucky-setup.mjs

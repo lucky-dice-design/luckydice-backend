@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test server.test.mjs
+      - run: node --test server.test.mjs setup-collection-navigation.test.mjs
       - name: Check release files
         run: |
           for file in *.mjs; do node --check "$file"; done

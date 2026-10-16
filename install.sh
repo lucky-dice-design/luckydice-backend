@@ -12,7 +12,7 @@ test -f "$himmel/Caddyfile"
 docker network inspect himmelsteil-cms_web >/dev/null
 install -d -m 0755 "$target/frontend/dist" "$target/backend"
 cp -a "$release/frontend/dist/." "$target/frontend/dist/"
-for file in compose.yaml setup.mjs server.mjs schema.json seed.json Caddyfile.luckydice; do
+for file in compose.yaml setup.mjs setup-collection-navigation.mjs server.mjs schema.json seed.json Caddyfile.luckydice; do
   install -m 0644 "$release/backend/$file" "$target/backend/$file"
 done
 cd "$target/backend"
@@ -61,6 +61,7 @@ if [ "$ready" != true ]; then
 fi
 # A running file bind mount can retain the previous inode after install replaces it.
 docker compose cp setup.mjs luckydice-cms:/tmp/lucky-setup.mjs
+docker compose cp setup-collection-navigation.mjs luckydice-cms:/tmp/setup-collection-navigation.mjs
 docker compose cp schema.json luckydice-cms:/tmp/lucky-schema.json
 docker compose cp seed.json luckydice-cms:/tmp/lucky-seed.json
 docker compose exec -T -u root -e SCHEMA_PATH=/tmp/lucky-schema.json -e SEED_PATH=/tmp/lucky-seed.json luckydice-cms node /tmp/lucky-setup.mjs

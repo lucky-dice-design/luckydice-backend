@@ -99,6 +99,7 @@ inaktive Himmelsteil-Hauptdomain wird durch Deployments nicht aktiviert.
 
 - Konfiguration, PostgreSQL und Directus-Uploads sichern; beide Datenarchive prüfen.
 - Backend-Dateien aktualisieren, den vorhandenen additiven Schema-/Rechte-Setup ausführen und den Webserver neu erstellen.
+- Collection-Gruppen, Anzeigenamen und Icons über das zusätzliche Navigationsmodul aktualisieren (siehe `../COLLECTIONS.md`). Für diesen Release den root-eigenen Deployment-Einstiegspunkt erneut installieren, da er auch dieses neue Modul übertragen muss.
 - Dieser vorhandene Setup kann außerdem die Firmen-E-Mail aus den Seed-Daten übernehmen und den technischen Token aktualisieren. Es ist eine CMS-Änderung, kein reines Kopieren von Dateien.
 - Den Lucky-Dice-Block im gemeinsamen Caddy aktualisieren, validieren und Caddy neu laden. Ein fehlgeschlagener Reload stellt die vorige Caddy-Datei wieder her.
 - Einen vollständigen CMS-Fallback exportieren und den bestehenden Fünfminuten-Cronjob samt Logrotation aktualisieren.

@@ -1,5 +1,9 @@
 # VPS Deployment
 
+Die gruppierte Directus-Navigation mit Anzeigenamen und Icons ist in
+[COLLECTIONS.md](COLLECTIONS.md) beschrieben. Das reguläre Setup aktualisiert
+sie auch für bereits vorhandene Collections.
+
 The installation uses the existing Himmelsteil Caddy container and its web network.
 Lucky Dice has its own PostgreSQL database, Directus instance and website service.
 Nothing is cloned from GitHub on the VPS. Files are uploaded by SSH.

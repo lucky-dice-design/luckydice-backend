@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { randomBytes } from 'node:crypto';
+import { applyCollectionNavigation } from './setup-collection-navigation.mjs';
 
 const base = 'http://127.0.0.1:8055';
 let token;
@@ -120,4 +121,5 @@ if (!user) user = await api('/users', 'POST', {
 });
 else await api(`/users/${user.id}`, 'PATCH', { token: serviceToken });
 fs.writeFileSync('/opt/lucky/secrets/contact_token', serviceToken, { mode: 0o640 });
+await applyCollectionNavigation(api);
 console.log('Lucky Dice collections, content and restricted website access are ready.');
