@@ -5,7 +5,7 @@ Lucky Dice has its own PostgreSQL database, Directus instance and website servic
 Nothing is cloned from GitHub on the VPS. Files are uploaded by SSH.
 
 This repository contains the backend release files. The static frontend is
-maintained in `MrJoky/luckydice-frontend`. Real `.env` files, uploaded files,
+maintained in `lucky-dice-design/luckydice-frontend`. Real `.env` files, uploaded files,
 database storage and service keys are excluded from Git.
 
 Upload this directory as `backend` and the website `dist` as `frontend/dist`
@@ -93,3 +93,23 @@ sudo bash /home/timo/luckydice-release/backend/install-sync.sh
 
 This performs the first sync before enabling `/etc/cron.d/luckydice-content`.
 Logs are in `/var/log/luckydice-content.log` and rotate weekly.
+
+## Static file permissions
+
+The website container runs as uid/gid 1000:1000. After copying the release,
+the installer sets public frontend directories to 0755 and files to 0644.
+Uploads may preserve mode 0700 on dist. The installer checks readability
+using the website service user before recreating it, and checks the actual
+HTML homepage after startup in addition to the CMS gateway.
+
+If the live homepage returns a JSON Not found error because the root-owned
+static directory has mode 0700, repair only the public frontend tree:
+
+```bash
+sudo find /opt/luckydicedesign/frontend/dist -type d -exec chmod 0755 {} +
+sudo find /opt/luckydicedesign/frontend/dist -type f -exec chmod 0644 {} +
+curl -fsSI https://luckydicedesign.de/
+```
+
+No restart is required. Do not apply these permissions to the backend,
+.env, or secrets.

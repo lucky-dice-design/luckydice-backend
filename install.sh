@@ -12,6 +12,10 @@ test -f "$himmel/Caddyfile"
 docker network inspect himmelsteil-cms_web >/dev/null
 install -d -m 0755 "$target/frontend/dist" "$target/backend"
 cp -a "$release/frontend/dist/." "$target/frontend/dist/"
+# Uploads can carry mode 0700; the website runs as uid 1000, not root.
+# Normalize only public static files, leaving backend credentials untouched.
+find "$target/frontend/dist" -type d -exec chmod 0755 {} +
+find "$target/frontend/dist" -type f -exec chmod 0644 {} +
 for file in compose.yaml setup.mjs server.mjs schema.json seed.json Caddyfile.luckydice; do
   install -m 0644 "$release/backend/$file" "$target/backend/$file"
 done
@@ -66,11 +70,14 @@ docker compose cp seed.json luckydice-cms:/tmp/lucky-seed.json
 docker compose exec -T -u root -e SCHEMA_PATH=/tmp/lucky-schema.json -e SEED_PATH=/tmp/lucky-seed.json luckydice-cms node /tmp/lucky-setup.mjs
 chown 1000:1000 secrets/contact_token
 chmod 0640 secrets/contact_token
+# Check the mounted files as the same uid/gid used by the website service.
+docker compose run --rm --no-deps website node -e "const fs=require('node:fs');fs.accessSync('/app/site/index.html',fs.constants.R_OK)"
 docker compose up -d --no-deps --force-recreate website
 for attempt in $(seq 1 20); do
   if docker compose exec -T website node -e "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" >/dev/null 2>&1; then break; fi
   sleep 1
 done
+docker compose exec -T website node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok&&r.headers.get('content-type')?.startsWith('text/html')?0:1)).catch(()=>process.exit(1))"
 docker compose exec -T website node -e "fetch('http://127.0.0.1:3000/cms/items/site_settings').then(async r=>{const j=await r.json();if(!r.ok||!j.data?.site_name)process.exit(1)}).catch(()=>process.exit(1))"
 stamp=$(date -u +%Y%m%dT%H%M%SZ)
 candidate=$(mktemp)
