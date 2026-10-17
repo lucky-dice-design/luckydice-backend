@@ -1,5 +1,12 @@
 # GitHub Actions → VPS
 
+Der Einstiegspunkt benötigt vor dem ersten Einsatz die separat root-installierte
+Release-Prüfung `/usr/local/libexec/lucky-verify-release` und die freigegebene
+Policy `/etc/lucky-deploy/release-policy.json`. Fehlen sie oder weichen geschützte
+Dateien ab, bricht das Deployment vor dem Entpacken ab. Installation und Grenzen
+sind im Himmelsteil-Backend unter `deploy/RESTRICTED-SSH.md` beschrieben. Die Policy
+wird niemals aus einem eingehenden Release installiert.
+
 `/.github/workflows/deploy.yml` prüft jeden Push und Pull Request. Nur nach
 bestandenen Prüfungen auf `main` wird deployt; ein Merge löst den normalen
 Push-Workflow aus. `workflow_dispatch` erlaubt einen erneuten Lauf auf diesem

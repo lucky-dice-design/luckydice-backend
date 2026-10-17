@@ -14,8 +14,8 @@ exec 9>/run/lock/lucky-vps-deploy.lock
 flock -w 900 9
 work=$(mktemp -d /var/tmp/luckydice-backend.XXXXXXXX)
 trap 'rm -rf -- "$work"' EXIT
-# Copy first: subsequent extraction is from a root-owned, stable archive.
-cp "$archive" "$work/release.tar.gz"
+# Stage a bounded archive and enforce the root-installed policy before extraction.
+/usr/local/libexec/lucky-verify-release luckydice-backend "$archive" "$work/release.tar.gz"
 mkdir "$work/source"
 # git archive produces regular files; reject links and traversal before extraction.
 python3 - "$work/release.tar.gz" "$work/source" <<'PYTHON'
