@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Configure SSH
         env:
-          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          SSH_KEY: ${{ secrets.VPS_DEPLOY_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
         run: |
           test -n "$SSH_KEY" && test -n "$KNOWN_HOSTS"
@@ -58,7 +58,7 @@ jobs:
         run: |
           test -n "$VPS_HOST" && test -n "$VPS_USER"
           [[ "$VPS_HOST" =~ ^[a-zA-Z0-9.-]+$ ]]
-          [[ "$VPS_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
+          [[ "$VPS_USER" == github-deploy ]]
           [[ "$VPS_PORT" =~ ^[0-9]+$ ]]
           [[ "$REVISION" =~ ^[0-9a-f]{40}$ ]]
           current=$(git ls-remote origin "$BRANCH_REF" | cut -f1)
@@ -69,10 +69,15 @@ jobs:
           archive="${RUNNER_TEMP}/release.tar.gz"
           git archive --format=tar.gz --output="$archive" "$REVISION"
           destination="$VPS_USER@$VPS_HOST"
-          options=(-o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
-          ssh "${options[@]}" -p "$VPS_PORT" "$destination" "mkdir -p ~/deploy-incoming/luckydice-backend/$REVISION"
-          scp "${options[@]}" -P "$VPS_PORT" "$archive" "$destination:deploy-incoming/luckydice-backend/$REVISION/release.tar.gz"
-          ssh "${options[@]}" -p "$VPS_PORT" "$destination" "sudo -n /usr/local/sbin/deploy-luckydice-backend $REVISION"
+          length=$(stat -c %s "$archive")
+          digest=$(sha256sum "$archive" | cut -d ' ' -f1)
+          [[ "$length" =~ ^[1-9][0-9]{0,8}$ ]] && (( length <= 268435456 ))
+          [[ "$digest" =~ ^[0-9a-f]{64}$ ]]
+          options=(-T -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
+          status=$(ssh "${options[@]}" -p "$VPS_PORT" "$destination" status < /dev/null)
+          [[ "$status" == 'Restricted deployment SSH entrypoint ready (protocol 1)' ]]
+          ssh "${options[@]}" -p "$VPS_PORT" "$destination" "upload luckydice-backend $REVISION $length $digest" < "$archive"
+          ssh "${options[@]}" -p "$VPS_PORT" "$destination" "deploy luckydice-backend $REVISION" < /dev/null
       - name: Remove SSH key
         if: always()
         run: rm -f ~/.ssh/id_ed25519
