@@ -9,10 +9,97 @@ const root = process.env.SITE_ROOT || '/app/site';
 const tokenPath = process.env.TOKEN_PATH || '/app/contact_token';
 const cms = process.env.DIRECTUS_URL;
 const origins = new Set(['https://luckydicedesign.de', 'https://www.luckydicedesign.de', 'https://luckydicedesign.com', 'https://www.luckydicedesign.com']);
-const collections = new Set(['site_settings', 'navigation_items', 'pages', 'services', 'projects', 'about_facts', 'process_steps', 'contact_channels']);
+const publicFields = {
+  site_settings: ['id', 'site_name', 'footer_note', 'email', 'instagram'],
+  navigation_items: ['id', 'label', 'url', 'sort', 'status'],
+  pages: ['id', 'slug', 'status', 'meta_title', 'meta_description', 'title', 'text', 'legal_body', 'hero_title', 'hero_text', 'intro_title', 'intro_text'],
+  services: ['id', 'status', 'sort', 'number', 'title', 'text'],
+  projects: ['id', 'slug', 'website_url', 'detail_body', 'screenshot', 'screenshot_alt', 'status', 'sort', 'title', 'type', 'year', 'text', 'highlight'],
+  about_facts: ['id', 'sort', 'label', 'value'],
+  process_steps: ['id', 'sort', 'title', 'text'],
+  contact_channels: ['id', 'sort', 'label', 'value', 'url'],
+};
+const collections = new Set(Object.keys(publicFields));
+const publishedCollections = new Set(['navigation_items', 'pages', 'services', 'projects']);
+const sortedCollections = new Set(['navigation_items', 'services', 'projects', 'about_facts', 'process_steps', 'contact_channels']);
+const maxRows = 100;
+const maxOffset = 9900;
+const maxCmsBytes = 1024 * 1024;
+const readRates = new Map();
+let nextReadSweep = 0;
 const rates = new Map();
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.woff2': 'font/woff2' };
-function reply(res, code, body) { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); }
+function reply(res, code, body) { res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(JSON.stringify(body)); }
+function allowRead(req) {
+  const now = Date.now();
+  if (now >= nextReadSweep) {
+    for (const [ip, entry] of readRates) if (entry.until <= now) readRates.delete(ip);
+    nextReadSweep = now + 1000;
+  }
+  // The website port is internal; Caddy appends the actual peer to this header.
+  const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',').at(-1).trim();
+  let entry = readRates.get(ip);
+  if (!entry || entry.until <= now) {
+    if (!entry && readRates.size >= 10000) return false;
+    entry = { count: 0, until: now + 60000 };
+    readRates.set(ip, entry);
+  }
+  return ++entry.count <= 120;
+}
+function publicQuery(collection, search) {
+  const allowed = new Set(['limit', 'offset', 'sort', 'filter[status][_eq]', 'filter[slug][_eq]']);
+  for (const key of search.keys()) {
+    if (!allowed.has(key) || search.getAll(key).length !== 1) throw new Error('Unsupported query');
+  }
+  const limit = search.get('limit') ?? String(maxRows);
+  const offset = search.get('offset') ?? '0';
+  if (!/^[1-9][0-9]{0,2}$/.test(limit) || Number(limit) > maxRows ||
+      !/^(0|[1-9][0-9]{0,3})$/.test(offset) || Number(offset) > maxOffset) throw new Error('Invalid pagination');
+  if (search.has('sort') && (!sortedCollections.has(collection) || search.get('sort') !== 'sort')) throw new Error('Invalid sort');
+  if (search.has('filter[status][_eq]') &&
+      (!publishedCollections.has(collection) || search.get('filter[status][_eq]') !== 'published')) throw new Error('Invalid status');
+  const slug = search.get('filter[slug][_eq]');
+  if (slug !== null && (!['pages', 'projects'].includes(collection) ||
+      slug.length > 180 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))) throw new Error('Invalid slug');
+  const params = new URLSearchParams({ fields: publicFields[collection].join(',') });
+  if (collection === 'site_settings') {
+    if (search.size) throw new Error('Singleton query parameters are not supported');
+  } else {
+    params.set('limit', limit);
+    params.set('offset', offset);
+    params.set('sort', sortedCollections.has(collection) ? 'sort,id' : 'id');
+  }
+  if (publishedCollections.has(collection)) params.set('filter[status][_eq]', 'published');
+  if (slug !== null) params.set('filter[slug][_eq]', slug);
+  return { path: `/items/${collection}?${params}`, limit: Number(limit) };
+}
+async function cmsJson(result) {
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of result.body) {
+    size += chunk.length;
+    if (size > maxCmsBytes) throw new Error('CMS response exceeds size limit');
+    chunks.push(chunk);
+  }
+  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+}
+function publicData(collection, data, limit) {
+  const project = item => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) throw new Error('Invalid CMS item');
+    if (publishedCollections.has(collection) && item.status !== 'published') throw new Error('Unexpected unpublished CMS item');
+    const output = {};
+    for (const field of publicFields[collection]) {
+      if (!Object.hasOwn(item, field)) continue;
+      const value = item[field];
+      if (value !== null && !['string', 'number', 'boolean'].includes(typeof value)) throw new Error('Unexpected CMS relation');
+      output[field] = value;
+    }
+    return output;
+  };
+  if (collection === 'site_settings') return project(data);
+  if (!Array.isArray(data) || data.length > limit) throw new Error('Invalid CMS collection');
+  return data.map(project);
+}
 async function forward(url, method = 'GET', body) {
   return fetch(cms + url, {
     method, signal: AbortSignal.timeout(10000),
@@ -22,6 +109,7 @@ async function forward(url, method = 'GET', body) {
 }
 http.createServer(async (req, res) => {
   try {
+    if (req.url.length > 2048) return reply(res, 414, { error: 'URL too long' });
     const url = new URL(req.url, 'http://localhost');
     if (req.method === 'GET' && url.pathname === '/health') return reply(res, 200, { ok: true });
     if (req.method === 'GET' && url.pathname === '/assets/config.js') {
@@ -31,6 +119,7 @@ http.createServer(async (req, res) => {
     const match = url.pathname.match(/^\/cms\/items\/([a-z_]+)$/);
     const asset = url.pathname.match(/^\/cms\/assets\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i);
     if (['GET', 'HEAD'].includes(req.method) && asset) {
+      if (!allowRead(req)) return reply(res, 429, { error: 'Please try again later' });
       const result = await forward(`/assets/${asset[1]}`);
       if (!result.ok) return reply(res, result.status === 403 ? 404 : result.status, { error: 'Screenshot unavailable' });
       const mime = result.headers.get('content-type')?.split(';')[0];
@@ -41,9 +130,17 @@ http.createServer(async (req, res) => {
       return;
     }
     if (req.method === 'GET' && match && collections.has(match[1])) {
-      const result = await forward(`/items/${match[1]}${url.search}`);
-      res.writeHead(result.status, { 'Content-Type': 'application/json' });
-      return res.end(await result.text());
+      if (!allowRead(req)) return reply(res, 429, { error: 'Please try again later' });
+      let query;
+      try { query = publicQuery(match[1], url.searchParams); }
+      catch { return reply(res, 400, { error: 'Unsupported content query' }); }
+      const result = await forward(query.path);
+      if (!result.ok) {
+        await result.body?.cancel();
+        return reply(res, 502, { error: 'Content unavailable' });
+      }
+      const payload = await cmsJson(result);
+      return reply(res, 200, { data: publicData(match[1], payload.data, query.limit) });
     }
     if (req.method === 'POST' && url.pathname === '/cms/items/contact_submissions') {
       if (!origins.has(req.headers.origin)) return reply(res, 403, { error: 'Origin rejected' });
@@ -74,11 +171,12 @@ http.createServer(async (req, res) => {
     let target = file;
     const projectRoute = url.pathname.match(/^\/work\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/);
     if (projectRoute) {
+      if (!allowRead(req)) return reply(res, 429, { error: 'Please try again later' });
       let project;
       try {
-        const result = await forward(`/items/projects?filter[slug][_eq]=${encodeURIComponent(projectRoute[1])}&filter[status][_eq]=published&limit=1`);
+        const result = await forward(`/items/projects?fields=slug&filter[slug][_eq]=${encodeURIComponent(projectRoute[1])}&filter[status][_eq]=published&limit=1`);
         if (!result.ok) throw new Error('CMS unavailable');
-        const payload = await result.json();
+        const payload = await cmsJson(result);
         if (!Array.isArray(payload.data)) throw new Error('Invalid CMS response');
         project = payload.data[0];
       } catch {
