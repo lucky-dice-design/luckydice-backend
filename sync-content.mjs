@@ -1,11 +1,19 @@
 const base = process.env.CONTENT_GATEWAY || 'http://127.0.0.1:3000';
 async function read(collection, sorted = true) {
-  const params = new URLSearchParams({ limit: '-1', ...(sorted ? { sort: 'sort' } : {}) });
-  const response = await fetch(`${base}/cms/items/${collection}?${params}`, { signal: AbortSignal.timeout(15000) });
-  if (!response.ok) throw new Error(`Content sync failed: ${collection} (${response.status})`);
-  const { data } = await response.json();
-  if (data === null || data === undefined) throw new Error(`Missing CMS content: ${collection}`);
-  return data;
+  const singleton = collection === 'site_settings';
+  const items = [];
+  for (let offset = 0; offset < 10000; offset += 100) {
+    const params = new URLSearchParams(singleton ? {} : { limit: '100', offset: String(offset), ...(sorted ? { sort: 'sort' } : {}) });
+    const response = await fetch(`${base}/cms/items/${collection}?${params}`, { signal: AbortSignal.timeout(15000) });
+    if (!response.ok) throw new Error(`Content sync failed: ${collection} (${response.status})`);
+    const { data } = await response.json();
+    if (data === null || data === undefined) throw new Error(`Missing CMS content: ${collection}`);
+    if (singleton) return data;
+    if (!Array.isArray(data) || data.length > 100) throw new Error(`Invalid CMS response: ${collection}`);
+    items.push(...data);
+    if (data.length < 100) return items;
+  }
+  throw new Error(`Content sync limit reached: ${collection}`);
 }
 try {
   const settings = await read('site_settings', false);
