@@ -5,26 +5,46 @@ import { applyCollectionNavigation } from './setup-collection-navigation.mjs';
 const base = 'http://127.0.0.1:8055';
 let token;
 async function api(path, method = 'GET', body) {
-  const response = await fetch(base + path, {
-    method,
-    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  });
-  // Directus DELETE succeeds with 204 and no JSON body.
-  if (response.status === 204) return null;
-  const result = await response.json();
-  if (!response.ok) {
-    const errors = (result.errors || []).map(error => ({
-      message: error.message,
-      code: error.extensions?.code,
-      collection: error.extensions?.collection,
-      field: error.extensions?.field,
-      reason: error.extensions?.reason,
-    }));
-    throw new Error(`${method} ${path}: ${response.status} ${JSON.stringify(errors)}`);
+  const maxAttempts = 6;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const response = await fetch(base + path, {
+      method,
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+    // Retry only explicit rate-limit rejections, not uncertain writes or errors.
+    if (response.status === 429 && attempt < maxAttempts - 1) {
+      const retryAfter = response.headers.get('retry-after');
+      const result = await response.json().catch(() => ({}));
+      const message = (result.errors || []).map(error => error.message || '').join(' ');
+      const milliseconds = message.match(/retry after\s+(\d+(?:\.\d+)?)\s*ms/i);
+      let serverDelay;
+      if (retryAfter && /^\d+(?:\.\d+)?$/.test(retryAfter.trim())) serverDelay = Number(retryAfter) * 1000;
+      else if (retryAfter && Number.isFinite(Date.parse(retryAfter))) serverDelay = Math.max(0, Date.parse(retryAfter) - Date.now());
+      else if (milliseconds) serverDelay = Number(milliseconds[1]);
+      const delay = Math.max(100, Math.ceil(serverDelay ?? 500 * 2 ** attempt));
+      if (delay > 30000) throw new Error(`${method} ${path}: 429 retry delay exceeds 30 seconds; retry deployment later`);
+      console.log(`Directus rate limit: retrying ${method} ${path} in ${delay}ms (${attempt + 2}/${maxAttempts})`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      continue;
+    }
+    // Directus DELETE succeeds with 204 and no JSON body.
+    if (response.status === 204) return null;
+    const result = await response.json();
+    if (!response.ok) {
+      const errors = (result.errors || []).map(error => ({
+        message: error.message,
+        code: error.extensions?.code,
+        collection: error.extensions?.collection,
+        field: error.extensions?.field,
+        reason: error.extensions?.reason,
+      }));
+      throw new Error(`${method} ${path}: ${response.status} ${JSON.stringify(errors)}`);
+    }
+    return result.data;
   }
-  return result.data;
 }
+
 token = (await api('/auth/login', 'POST', { email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD })).access_token;
 const schema = JSON.parse(fs.readFileSync(process.env.SCHEMA_PATH || '/opt/lucky/schema.json', 'utf8'));
 const seeds = JSON.parse(fs.readFileSync(process.env.SEED_PATH || '/opt/lucky/seed.json', 'utf8'));

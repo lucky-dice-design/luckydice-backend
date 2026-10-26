@@ -198,3 +198,61 @@ test('production Directus API helper accepts empty DELETE success and retains JS
   next = new Response(JSON.stringify({ errors: [{ message: 'Not allowed', extensions: { code: 'FORBIDDEN' } }] }), { status: 403 });
   await assert.rejects(() => api('/fields/pages/example', 'DELETE'), /403.*FORBIDDEN/);
 });
+
+test('production API retries 429 with Retry-After and preserves the original write', async () => {
+  const source = fs.readFileSync(new URL('./setup.mjs', import.meta.url), 'utf8');
+  const start = source.indexOf('async function api('), end = source.indexOf('\ntoken = (await api(', start);
+  const { runInNewContext } = await import('node:vm');
+  const calls = [], waits = [];
+  const responses = [
+    new Response(JSON.stringify({ errors: [{ message: 'Too many requests' }] }), { status: 429, headers: { 'Retry-After': '0.25' } }),
+    new Response(JSON.stringify({ data: { id: 3 } }), { status: 200 })
+  ];
+  const api = runInNewContext(source.slice(start, end) + '\napi', {
+    base: 'http://cms.invalid', token: 'test-token', console: { log() {} },
+    setTimeout: (done, ms) => { waits.push(ms); done(); },
+    fetch: async (url, options) => { calls.push({ url, options }); return responses.shift(); }
+  });
+  assert.equal((await api('/items/pages/3', 'PATCH', { title: 'Keep me' })).id, 3);
+  assert.equal(calls.length, 2);
+  assert.deepEqual(calls[0], calls[1]);
+  assert.deepEqual(waits, [250]);
+});
+
+test('production API handles the Directus millisecond hint and HTTP-date Retry-After', async () => {
+  const source = fs.readFileSync(new URL('./setup.mjs', import.meta.url), 'utf8');
+  const start = source.indexOf('async function api('), end = source.indexOf('\ntoken = (await api(', start);
+  const { runInNewContext } = await import('node:vm');
+  const fixedNow = Date.parse('2026-10-26T18:00:00Z');
+  class TestDate extends Date { static now() { return fixedNow; } }
+  for (const [headers, message, expected] of [
+    [{}, 'Too many requests, retry after 242ms.', 242],
+    [{ 'Retry-After': 'Mon, 26 Oct 2026 18:00:02 GMT' }, 'Too many requests', 2000]
+  ]) {
+    const waits = [];
+    const responses = [new Response(JSON.stringify({ errors: [{ message }] }), { status: 429, headers }), new Response(null, { status: 204 })];
+    const api = runInNewContext(source.slice(start, end) + '\napi', {
+      base: 'http://cms.invalid', token: 'test-token', console: { log() {} }, Date: TestDate,
+      setTimeout: (done, ms) => { waits.push(ms); done(); }, fetch: async () => responses.shift()
+    });
+    assert.equal(await api('/fields/pages/sheet_next_title', 'DELETE'), null);
+    assert.deepEqual(waits, [expected]);
+  }
+});
+
+test('production API bounds retries, backs off and does not retry authorization or server errors', async () => {
+  const source = fs.readFileSync(new URL('./setup.mjs', import.meta.url), 'utf8');
+  const start = source.indexOf('async function api('), end = source.indexOf('\ntoken = (await api(', start);
+  const { runInNewContext } = await import('node:vm');
+  for (const status of [429, 403, 500]) {
+    let calls = 0; const waits = [];
+    const api = runInNewContext(source.slice(start, end) + '\napi', {
+      base: 'http://cms.invalid', token: 'test-token', console: { log() {} },
+      setTimeout: (done, ms) => { waits.push(ms); done(); },
+      fetch: async () => { calls++; return new Response(JSON.stringify({ errors: [{ message: 'Rejected' }] }), { status }); }
+    });
+    await assert.rejects(() => api('/fields/pages/example', 'DELETE'), new RegExp(String(status)));
+    assert.equal(calls, status === 429 ? 6 : 1);
+    assert.deepEqual(waits, status === 429 ? [500, 1000, 2000, 4000, 8000] : []);
+  }
+});
