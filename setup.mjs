@@ -10,6 +10,8 @@ async function api(path, method = 'GET', body) {
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
+  // Directus DELETE succeeds with 204 and no JSON body.
+  if (response.status === 204) return null;
   const result = await response.json();
   if (!response.ok) {
     const errors = (result.errors || []).map(error => ({
