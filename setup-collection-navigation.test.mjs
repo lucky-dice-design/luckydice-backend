@@ -179,3 +179,22 @@ test('Docker installer bootstraps About editors, preserves edited copy and is re
   await install(api);
   assert.deepEqual(writes, []);
 });
+
+test('production Directus API helper accepts empty DELETE success and retains JSON errors', async () => {
+  const source = fs.readFileSync(new URL('./setup.mjs', import.meta.url), 'utf8');
+  const start = source.indexOf('async function api(');
+  const end = source.indexOf('\ntoken = (await api(', start);
+  assert.ok(start >= 0 && end > start);
+  const { runInNewContext } = await import('node:vm');
+  const requests = [];
+  let next = new Response(null, { status: 204 });
+  const fetchStub = async (url, options) => { requests.push({ url, options }); return next; };
+  const api = runInNewContext(source.slice(start, end) + '\napi', { base: 'http://cms.invalid', token: 'test-token', fetch: fetchStub });
+  assert.equal(await api('/fields/pages/sheet_quests_title', 'DELETE'), null);
+  assert.equal(requests[0].options.method, 'DELETE');
+  assert.equal(requests[0].url, 'http://cms.invalid/fields/pages/sheet_quests_title');
+  next = new Response(JSON.stringify({ data: { sheet_portrait: 'test-id' } }), { status: 200 });
+  assert.equal((await api('/items/pages')).sheet_portrait, 'test-id');
+  next = new Response(JSON.stringify({ errors: [{ message: 'Not allowed', extensions: { code: 'FORBIDDEN' } }] }), { status: 403 });
+  await assert.rejects(() => api('/fields/pages/example', 'DELETE'), /403.*FORBIDDEN/);
+});
