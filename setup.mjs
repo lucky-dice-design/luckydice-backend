@@ -125,7 +125,7 @@ await applyCollectionNavigation(api);
 // About fields, file relation, editor metadata and missing values are installed
 // using the existing authenticated API inside the Directus container.
 async function installAbout(api) {
-  const { fields: aboutFields, seed: aboutSeed } = schema.about_bootstrap;
+  const { fields: aboutFields, seed: aboutSeed, retired_fields: retiredAboutFields } = schema.about_bootstrap;
   const fields = await api('/fields/pages');
   const policies = await api('/policies?filter[name][_eq]=Lucky%20Website&limit=-1');
   const policy = policies.find(item => item.name === 'Lucky Website');
@@ -137,6 +137,9 @@ async function installAbout(api) {
   const existingPages = await api('/items/pages?filter[slug][_eq]=about&limit=1');
   if (!existingPages[0]) throw new Error('About page missing. No changes made.');
   const known = new Map(fields.map(item => [item.field, item]));
+  for (const name of retiredAboutFields) {
+    if (known.has(name) && known.get(name).type !== 'text') throw new Error(`Unexpected type for retired field ${name}. Review before removing.`);
+  }
   for (const field of aboutFields) {
     const existing = known.get(field.field);
     if (existing?.type && existing.type !== field.type) throw new Error(`Unexpected type for ${field.field}. Review before installing.`);
@@ -163,8 +166,8 @@ async function installAbout(api) {
     meta: { one_field: 'lucky_about_portraits', one_deselect_action: 'nullify' }, schema: { on_delete: 'SET NULL' }
   });
   if (!(pageGrant.fields || []).includes('*')) {
-    const nextFields = [...new Set([...(pageGrant.fields || []), ...aboutFields.filter(field => field.type !== 'alias').map(field => field.field)])];
-    if (nextFields.length !== (pageGrant.fields || []).length) await api(`/permissions/${pageGrant.id}`, 'PATCH', { fields: nextFields });
+    const nextFields = [...new Set([...(pageGrant.fields || []).filter(name => !retiredAboutFields.includes(name)), ...aboutFields.filter(field => field.type !== 'alias').map(field => field.field)])];
+    if (JSON.stringify(nextFields) !== JSON.stringify(pageGrant.fields || [])) await api(`/permissions/${pageGrant.id}`, 'PATCH', { fields: nextFields });
   }
   const portraitRule = { _and: [
     { type: { _in: ['image/png', 'image/jpeg', 'image/webp', 'image/avif'] } },
@@ -178,7 +181,13 @@ async function installAbout(api) {
   const page = (await api('/items/pages?filter[slug][_eq]=about&limit=1'))[0];
   const seed = Object.fromEntries(Object.entries(aboutSeed).filter(([key, value]) => value !== null && (page[key] === null || page[key] === undefined)));
   if (Object.keys(seed).length) await api(`/items/pages/${encodeURIComponent(page.id)}`, 'PATCH', seed);
-  return { fields: aboutFields.length, preserved: true };
+  const removed = [];
+  for (const name of retiredAboutFields) {
+    if (!known.has(name)) continue;
+    await api(`/fields/pages/${name}`, 'DELETE');
+    removed.push(name);
+  }
+  return { fields: aboutFields.length, removed, preserved: true };
 }
 
 await installAbout(api);
