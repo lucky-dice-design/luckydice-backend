@@ -33,7 +33,64 @@
         { "field": "hero_title", "type": "text" },
         { "field": "hero_text", "type": "text" },
         { "field": "intro_title", "type": "text" },
-        { "field": "intro_text", "type": "text" }
+        { "field": "intro_text", "type": "text" },
+        { "field": "sheet_eyebrow", "type": "text" },
+        { "field": "sheet_title", "type": "text" },
+        { "field": "sheet_intro", "type": "text" },
+        { "field": "sheet_portrait", "type": "uuid" },
+        { "field": "sheet_portrait_alt", "type": "text" },
+        { "field": "sheet_portrait_placeholder", "type": "text" },
+        { "field": "sheet_portrait_caption", "type": "text" },
+        { "field": "sheet_identity_label", "type": "text" },
+        { "field": "sheet_identity", "type": "json" },
+        { "field": "sheet_roll_label", "type": "text" },
+        { "field": "sheet_dice_label", "type": "text" },
+        { "field": "sheet_dice_hint", "type": "text" },
+        { "field": "sheet_roll_result_label", "type": "text" },
+        { "field": "sheet_roll_pending_label", "type": "text" },
+        { "field": "sheet_roll_bonus_label", "type": "text" },
+        { "field": "sheet_roll_outcomes", "type": "json" },
+        { "field": "sheet_discovery_label", "type": "text" },
+        { "field": "sheet_discovery_link", "type": "text" },
+        { "field": "sheet_discoveries", "type": "json" },
+        { "field": "sheet_skills_title", "type": "text" },
+        { "field": "sheet_skills_hint", "type": "text" },
+        { "field": "sheet_skills", "type": "json" },
+        { "field": "sheet_inventory_title", "type": "text" },
+        { "field": "sheet_inventory", "type": "json" },
+        { "field": "sheet_approach_title", "type": "text" },
+        { "field": "sheet_approach", "type": "json" },
+        { "field": "sheet_quests_title", "type": "text" },
+        { "field": "sheet_projects_tab", "type": "text" },
+        { "field": "sheet_process_tab", "type": "text" },
+        { "field": "sheet_project_link", "type": "text" },
+        { "field": "sheet_project_empty", "type": "text" },
+        { "field": "sheet_next_title", "type": "text" },
+        { "field": "sheet_next_text", "type": "text" },
+        { "field": "sheet_next_link", "type": "text" },
+        { "field": "sheet_personal_title", "type": "text" },
+        { "field": "sheet_personal_intro", "type": "text" },
+        { "field": "sheet_personal_open_label", "type": "text" },
+        { "field": "sheet_personal", "type": "json" },
+        { "field": "sheet_personal_empty", "type": "text" },
+        { "field": "sheet_twitch_channel", "type": "text" },
+        { "field": "sheet_twitch_link_label", "type": "text" },
+        { "field": "sheet_twitch_load_label", "type": "text" },
+        { "field": "sheet_twitch_notice", "type": "text" },
+        { "field": "sheet_twitch_player_title", "type": "text" },
+        { "field": "sheet_cta_eyebrow", "type": "text" },
+        { "field": "sheet_cta_title", "type": "text" },
+        { "field": "sheet_cta_text", "type": "text" },
+        { "field": "sheet_cta_label", "type": "text" },
+        { "field": "sheet_cta_url", "type": "text" },
+        { "field": "sheet_brand_label", "type": "text" },
+        { "field": "sheet_menu_label", "type": "text" },
+        { "field": "sheet_navigation_label", "type": "text" },
+        { "field": "sheet_theme_label", "type": "text" },
+        { "field": "sheet_light_label", "type": "text" },
+        { "field": "sheet_dark_label", "type": "text" },
+        { "field": "sheet_legal_label", "type": "text" },
+        { "field": "sheet_privacy_label", "type": "text" }
       ]
     },
     {
@@ -111,5 +168,305 @@
     { "collection": "process_steps", "action": "read" },
     { "collection": "contact_channels", "action": "read" },
     { "collection": "contact_submissions", "action": "create" }
-  ]
+  ],
+  "about_bootstrap": {
+    "fields": [
+      {"field":"sheet_hero_group","type":"alias","meta":{"interface":"group-detail","special":["alias","no-data","group"],"options":{"start":"closed"},"translations":[{"language":"de-DE","translation":"About me · Kopfbereich & Profilbild"}],"sort":100}},
+      {"field":"sheet_eyebrow","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_hero_group","sort":1,"width":"full","translations":[{"language":"de-DE","translation":"Kleine Überschrift"}],"interface":"input-multiline"}},
+      {"field":"sheet_title","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_hero_group","sort":2,"width":"full","translations":[{"language":"de-DE","translation":"Hauptüberschrift"}],"interface":"input-multiline","note":"Zeilenumbrüche werden in der Überschrift übernommen."}},
+      {"field":"sheet_intro","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_hero_group","sort":3,"width":"full","translations":[{"language":"de-DE","translation":"Einleitung"}],"interface":"input-multiline"}},
+      {"field":"sheet_portrait","type":"uuid","schema":{"is_nullable":true},"meta":{"group":"sheet_hero_group","sort":4,"width":"full","translations":[{"language":"de-DE","translation":"Profilbild"}],"interface":"file-image","special":["file"],"note":"JPEG, PNG, WebP oder AVIF. Am besten hochkant. Zuschneiden erfolgt im Layout.","options":{"crop":false}}},
+      {"field":"sheet_portrait_alt","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_hero_group","sort":5,"width":"full","translations":[{"language":"de-DE","translation":"Bildbeschreibung (Barrierefreiheit)"}],"interface":"input-multiline"}},
+      {"field":"sheet_portrait_placeholder","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_hero_group","sort":6,"width":"full","translations":[{"language":"de-DE","translation":"Text ohne Profilbild"}],"interface":"input-multiline"}},
+      {"field":"sheet_portrait_caption","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_hero_group","sort":7,"width":"full","translations":[{"language":"de-DE","translation":"Bildunterschrift"}],"interface":"input-multiline"}},
+      {"field":"sheet_identity_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_hero_group","sort":8,"width":"full","translations":[{"language":"de-DE","translation":"Charakter: Überschrift"}],"interface":"input-multiline"}},
+      {"field":"sheet_identity","type":"json","schema":{"is_nullable":true},"meta":{"group":"sheet_hero_group","sort":9,"width":"full","translations":[{"language":"de-DE","translation":"Charakter: Einträge"}],"interface":"list","special":["cast-json"],"options":{"template":"{{title}}","addLabel":"Eintrag hinzufügen","fields":[{"field":"title","name":"Titel","type":"string","meta":{"interface":"input","width":"full"}},{"field":"text","name":"Text","type":"text","meta":{"interface":"input-multiline","width":"full"}}]}}},
+      {"field":"sheet_dice_group","type":"alias","meta":{"interface":"group-detail","special":["alias","no-data","group"],"options":{"start":"closed"},"translations":[{"language":"de-DE","translation":"About me · Würfel & Einblicke"}],"sort":120}},
+      {"field":"sheet_roll_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_dice_group","sort":1,"width":"full","translations":[{"language":"de-DE","translation":"Würfel: Button"}],"interface":"input-multiline"}},
+      {"field":"sheet_dice_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_dice_group","sort":2,"width":"full","translations":[{"language":"de-DE","translation":"Würfel: Barrierefreie Beschreibung"}],"interface":"input-multiline"}},
+      {"field":"sheet_dice_hint","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_dice_group","sort":3,"width":"full","translations":[{"language":"de-DE","translation":"Würfel: Hinweis"}],"interface":"input-multiline"}},
+      {"field":"sheet_roll_result_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_dice_group","sort":4,"width":"full","translations":[{"language":"de-DE","translation":"Würfel: Ergebnis-Beschriftung"}],"interface":"input-multiline"}},
+      {"field":"sheet_roll_pending_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_dice_group","sort":5,"width":"full","translations":[{"language":"de-DE","translation":"Würfel: Text während des Wurfs"}],"interface":"input-multiline"}},
+      {"field":"sheet_roll_bonus_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_dice_group","sort":6,"width":"full","translations":[{"language":"de-DE","translation":"Würfel: Bonus-Überschrift"}],"interface":"input-multiline"}},
+      {"field":"sheet_roll_outcomes","type":"json","schema":{"is_nullable":true},"meta":{"group":"sheet_dice_group","sort":7,"width":"full","translations":[{"language":"de-DE","translation":"Würfelergebnisse (1–20)"}],"interface":"list","special":["cast-json"],"options":{"template":"{{title}}","addLabel":"Eintrag hinzufügen","fields":[{"field":"min","name":"Wurf von (1–20)","type":"integer","meta":{"interface":"input","width":"half","required":true,"options":{"min":1,"max":20}}},{"field":"max","name":"Wurf bis (1–20)","type":"integer","meta":{"interface":"input","width":"half","required":true,"options":{"min":1,"max":20}}},{"field":"title","name":"Titel","type":"string","meta":{"interface":"input","width":"full"}},{"field":"text","name":"Text","type":"text","meta":{"interface":"input-multiline","width":"full"}},{"field":"target","name":"Zielbereich","type":"string","meta":{"interface":"select-dropdown","options":{"choices":[{"text":"Fähigkeiten","value":"skills"},{"text":"Inventar","value":"inventory"},{"text":"Nebenquests","value":"personal"}]}}},{"field":"bonus_text","name":"Bonus-Inhalt bei einer natürlichen 20","type":"text","meta":{"interface":"input-multiline","width":"full","note":"Wird nur bei einer 20 freigeschaltet. Zeilenumbrüche bleiben erhalten."}}]}}},
+      {"field":"sheet_discovery_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_dice_group","sort":8,"width":"full","translations":[{"language":"de-DE","translation":"Einblick: Kleine Überschrift"}],"interface":"input-multiline"}},
+      {"field":"sheet_discovery_link","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_dice_group","sort":9,"width":"full","translations":[{"language":"de-DE","translation":"Einblick: Linktext"}],"interface":"input-multiline"}},
+      {"field":"sheet_discoveries","type":"json","schema":{"is_nullable":true},"meta":{"group":"sheet_dice_group","sort":10,"width":"full","translations":[{"language":"de-DE","translation":"Einblicke für den Entdeckungswurf"}],"interface":"list","special":["cast-json"],"options":{"template":"{{title}}","addLabel":"Eintrag hinzufügen","fields":[{"field":"title","name":"Titel","type":"string","meta":{"interface":"input","width":"full"}},{"field":"text","name":"Text","type":"text","meta":{"interface":"input-multiline","width":"full"}},{"field":"target","name":"Zielbereich","type":"string","meta":{"interface":"select-dropdown","options":{"choices":[{"text":"Fähigkeiten","value":"skills"},{"text":"Inventar","value":"inventory"},{"text":"Nebenquests","value":"personal"}]}}}]}}},
+      {"field":"sheet_skills_group","type":"alias","meta":{"interface":"group-detail","special":["alias","no-data","group"],"options":{"start":"closed"},"translations":[{"language":"de-DE","translation":"About me · Fähigkeiten, Inventar & Arbeitsweise"}],"sort":140}},
+      {"field":"sheet_skills_title","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_skills_group","sort":1,"width":"full","translations":[{"language":"de-DE","translation":"Fähigkeiten: Überschrift"}],"interface":"input-multiline"}},
+      {"field":"sheet_skills_hint","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_skills_group","sort":2,"width":"full","translations":[{"language":"de-DE","translation":"Fähigkeiten: Hinweis"}],"interface":"input-multiline"}},
+      {"field":"sheet_skills","type":"json","schema":{"is_nullable":true},"meta":{"group":"sheet_skills_group","sort":3,"width":"full","translations":[{"language":"de-DE","translation":"Fähigkeiten & Arbeitsproben"}],"interface":"list","special":["cast-json"],"options":{"template":"{{title}}","addLabel":"Eintrag hinzufügen","fields":[{"field":"title","name":"Titel","type":"string","meta":{"interface":"input","width":"full"}},{"field":"text","name":"Text","type":"text","meta":{"interface":"input-multiline","width":"full"}},{"field":"link_label","name":"Linktext","type":"string","meta":{"interface":"input","width":"half"}},{"field":"url","name":"Linkziel","type":"string","meta":{"interface":"input","width":"half","note":"Interner Pfad oder https://-Adresse"}},{"field":"icon","name":"Symbol","type":"string","meta":{"interface":"select-dropdown","options":{"choices":[{"text":"layout","value":"layout"},{"text":"code","value":"code"},{"text":"chart","value":"chart"},{"text":"mail","value":"mail"},{"text":"layers","value":"layers"},{"text":"cube","value":"cube"},{"text":"listen","value":"listen"},{"text":"compass","value":"compass"},{"text":"spark","value":"spark"},{"text":"dice","value":"dice"},{"text":"bike","value":"bike"},{"text":"mountain","value":"mountain"},{"text":"gamepad","value":"gamepad"}]}}}]}}},
+      {"field":"sheet_inventory_title","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_skills_group","sort":4,"width":"full","translations":[{"language":"de-DE","translation":"Inventar: Überschrift"}],"interface":"input-multiline"}},
+      {"field":"sheet_inventory","type":"json","schema":{"is_nullable":true},"meta":{"group":"sheet_skills_group","sort":5,"width":"full","translations":[{"language":"de-DE","translation":"Inventar: Einträge"}],"interface":"list","special":["cast-json"],"options":{"template":"{{title}}","addLabel":"Eintrag hinzufügen","fields":[{"field":"title","name":"Titel","type":"string","meta":{"interface":"input","width":"full"}},{"field":"text","name":"Text","type":"text","meta":{"interface":"input-multiline","width":"full"}},{"field":"icon","name":"Symbol","type":"string","meta":{"interface":"select-dropdown","options":{"choices":[{"text":"layout","value":"layout"},{"text":"code","value":"code"},{"text":"chart","value":"chart"},{"text":"mail","value":"mail"},{"text":"layers","value":"layers"},{"text":"cube","value":"cube"},{"text":"listen","value":"listen"},{"text":"compass","value":"compass"},{"text":"spark","value":"spark"},{"text":"dice","value":"dice"},{"text":"bike","value":"bike"},{"text":"mountain","value":"mountain"},{"text":"gamepad","value":"gamepad"}]}}}]}}},
+      {"field":"sheet_approach_title","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_skills_group","sort":6,"width":"full","translations":[{"language":"de-DE","translation":"Arbeitsweise: Überschrift"}],"interface":"input-multiline"}},
+      {"field":"sheet_approach","type":"json","schema":{"is_nullable":true},"meta":{"group":"sheet_skills_group","sort":7,"width":"full","translations":[{"language":"de-DE","translation":"Arbeitsweise: Einträge"}],"interface":"list","special":["cast-json"],"options":{"template":"{{title}}","addLabel":"Eintrag hinzufügen","fields":[{"field":"title","name":"Titel","type":"string","meta":{"interface":"input","width":"full"}},{"field":"text","name":"Text","type":"text","meta":{"interface":"input-multiline","width":"full"}},{"field":"icon","name":"Symbol","type":"string","meta":{"interface":"select-dropdown","options":{"choices":[{"text":"layout","value":"layout"},{"text":"code","value":"code"},{"text":"chart","value":"chart"},{"text":"mail","value":"mail"},{"text":"layers","value":"layers"},{"text":"cube","value":"cube"},{"text":"listen","value":"listen"},{"text":"compass","value":"compass"},{"text":"spark","value":"spark"},{"text":"dice","value":"dice"},{"text":"bike","value":"bike"},{"text":"mountain","value":"mountain"},{"text":"gamepad","value":"gamepad"}]}}}]}}},
+      {"field":"sheet_quest_group","type":"alias","meta":{"interface":"group-detail","special":["alias","no-data","group"],"options":{"start":"closed"},"translations":[{"language":"de-DE","translation":"About me · Nebenquests"}],"sort":160}},
+      {"field":"sheet_quests_title","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":1,"width":"full","translations":[{"language":"de-DE","translation":"Questlog: Überschrift"}],"hidden":true,"interface":"input-multiline"}},
+      {"field":"sheet_projects_tab","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":2,"width":"full","translations":[{"language":"de-DE","translation":"Questlog: Projekte-Tab"}],"hidden":true,"interface":"input-multiline"}},
+      {"field":"sheet_process_tab","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":3,"width":"full","translations":[{"language":"de-DE","translation":"Questlog: Prozess-Tab"}],"hidden":true,"interface":"input-multiline"}},
+      {"field":"sheet_project_link","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":4,"width":"full","translations":[{"language":"de-DE","translation":"Projekt: Linktext"}],"hidden":true,"interface":"input-multiline"}},
+      {"field":"sheet_project_empty","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":5,"width":"full","translations":[{"language":"de-DE","translation":"Projekt: Leerzustand"}],"hidden":true,"interface":"input-multiline"}},
+      {"field":"sheet_next_title","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":6,"width":"full","translations":[{"language":"de-DE","translation":"Projektanfrage: Titel"}],"hidden":true,"interface":"input-multiline"}},
+      {"field":"sheet_next_text","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":7,"width":"full","translations":[{"language":"de-DE","translation":"Projektanfrage: Text"}],"hidden":true,"interface":"input-multiline"}},
+      {"field":"sheet_next_link","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":8,"width":"full","translations":[{"language":"de-DE","translation":"Projektanfrage: Linktext"}],"hidden":true,"interface":"input-multiline"}},
+      {"field":"sheet_personal_title","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":9,"width":"full","translations":[{"language":"de-DE","translation":"Nebenquests: Überschrift"}],"interface":"input-multiline"}},
+      {"field":"sheet_personal_intro","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":10,"width":"full","translations":[{"language":"de-DE","translation":"Nebenquests: Einleitung"}],"interface":"input-multiline"}},
+      {"field":"sheet_personal_open_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":11,"width":"full","translations":[{"language":"de-DE","translation":"Nebenquests: Karte öffnen"}],"interface":"input-multiline"}},
+      {"field":"sheet_personal","type":"json","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":12,"width":"full","translations":[{"language":"de-DE","translation":"Nebenquests: Karten & Geschichten"}],"interface":"list","special":["cast-json"],"options":{"template":"{{title}}","addLabel":"Eintrag hinzufügen","fields":[{"field":"title","name":"Titel","type":"string","meta":{"interface":"input","width":"full"}},{"field":"text","name":"Text","type":"text","meta":{"interface":"input-multiline","width":"full"}},{"field":"link_label","name":"Linktext","type":"string","meta":{"interface":"input","width":"half"}},{"field":"url","name":"Linkziel","type":"string","meta":{"interface":"input","width":"half","note":"Interner Pfad oder https://-Adresse"}},{"field":"teaser","name":"Kurzbeschreibung auf der Karte","type":"string","meta":{"interface":"input","width":"full"}},{"field":"twitch","name":"Twitch-Kanal in dieser Karte anzeigen","type":"boolean","meta":{"interface":"boolean","width":"full"}},{"field":"icon","name":"Symbol","type":"string","meta":{"interface":"select-dropdown","options":{"choices":[{"text":"layout","value":"layout"},{"text":"code","value":"code"},{"text":"chart","value":"chart"},{"text":"mail","value":"mail"},{"text":"layers","value":"layers"},{"text":"cube","value":"cube"},{"text":"listen","value":"listen"},{"text":"compass","value":"compass"},{"text":"spark","value":"spark"},{"text":"dice","value":"dice"},{"text":"bike","value":"bike"},{"text":"mountain","value":"mountain"},{"text":"gamepad","value":"gamepad"}]}}}]}}},
+      {"field":"sheet_personal_empty","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":13,"width":"full","translations":[{"language":"de-DE","translation":"Nebenquests: Leerzustand"}],"interface":"input-multiline"}},
+      {"field":"sheet_twitch_channel","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":14,"width":"full","translations":[{"language":"de-DE","translation":"Twitch: Kanalname"}],"interface":"input-multiline"}},
+      {"field":"sheet_twitch_link_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":15,"width":"full","translations":[{"language":"de-DE","translation":"Twitch: Linktext"}],"interface":"input-multiline"}},
+      {"field":"sheet_twitch_load_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":16,"width":"full","translations":[{"language":"de-DE","translation":"Twitch: Player laden"}],"interface":"input-multiline"}},
+      {"field":"sheet_twitch_notice","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":17,"width":"full","translations":[{"language":"de-DE","translation":"Twitch: Hinweis vor dem Laden"}],"interface":"input-multiline"}},
+      {"field":"sheet_twitch_player_title","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_quest_group","sort":18,"width":"full","translations":[{"language":"de-DE","translation":"Twitch: Barrierefreier Player-Titel"}],"interface":"input-multiline"}},
+      {"field":"sheet_cta_group","type":"alias","meta":{"interface":"group-detail","special":["alias","no-data","group"],"options":{"start":"closed"},"translations":[{"language":"de-DE","translation":"About me · Kontakt"}],"sort":180}},
+      {"field":"sheet_cta_eyebrow","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_cta_group","sort":1,"width":"full","translations":[{"language":"de-DE","translation":"Kontakt: Kleine Überschrift"}],"interface":"input-multiline"}},
+      {"field":"sheet_cta_title","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_cta_group","sort":2,"width":"full","translations":[{"language":"de-DE","translation":"Kontakt: Überschrift"}],"interface":"input-multiline"}},
+      {"field":"sheet_cta_text","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_cta_group","sort":3,"width":"full","translations":[{"language":"de-DE","translation":"Kontakt: Text"}],"interface":"input-multiline"}},
+      {"field":"sheet_cta_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_cta_group","sort":4,"width":"full","translations":[{"language":"de-DE","translation":"Kontakt: Button"}],"interface":"input-multiline"}},
+      {"field":"sheet_cta_url","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_cta_group","sort":5,"width":"full","translations":[{"language":"de-DE","translation":"Kontakt: Linkziel"}],"interface":"input-multiline"}},
+      {"field":"sheet_ui_group","type":"alias","meta":{"interface":"group-detail","special":["alias","no-data","group"],"options":{"start":"closed"},"translations":[{"language":"de-DE","translation":"About me · Navigation & Bedienelemente"}],"sort":200}},
+      {"field":"sheet_brand_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_ui_group","sort":1,"width":"full","translations":[{"language":"de-DE","translation":"Markenname im Header"}],"interface":"input-multiline"}},
+      {"field":"sheet_menu_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_ui_group","sort":2,"width":"full","translations":[{"language":"de-DE","translation":"Menü: Barrierefreier Text"}],"interface":"input-multiline"}},
+      {"field":"sheet_navigation_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_ui_group","sort":3,"width":"full","translations":[{"language":"de-DE","translation":"Navigation: Barrierefreier Text"}],"interface":"input-multiline"}},
+      {"field":"sheet_theme_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_ui_group","sort":4,"width":"full","translations":[{"language":"de-DE","translation":"Farbschema: Barrierefreier Text"}],"interface":"input-multiline"}},
+      {"field":"sheet_light_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_ui_group","sort":5,"width":"full","translations":[{"language":"de-DE","translation":"Farbschema: Hell-Button"}],"interface":"input-multiline"}},
+      {"field":"sheet_dark_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_ui_group","sort":6,"width":"full","translations":[{"language":"de-DE","translation":"Farbschema: Dunkel-Button"}],"interface":"input-multiline"}},
+      {"field":"sheet_legal_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_ui_group","sort":7,"width":"full","translations":[{"language":"de-DE","translation":"Footer: Impressum-Link"}],"interface":"input-multiline"}},
+      {"field":"sheet_privacy_label","type":"text","schema":{"is_nullable":true},"meta":{"group":"sheet_ui_group","sort":8,"width":"full","translations":[{"language":"de-DE","translation":"Footer: Datenschutz-Link"}],"interface":"input-multiline"}}
+    ],
+    "seed": {
+      "meta_title": "About me | Lucky Dice Design",
+      "meta_description": "Lerne die Person, die Haltung und die Arbeitsweise hinter Lucky Dice Design kennen.",
+      "sheet_eyebrow": "Charakterbogen / Lucky Dice Design",
+      "sheet_title": "Kreativer Kopf.\nKlarer Kompass.",
+      "sheet_intro": "Lerne die Person hinter den Interfaces kennen. Ich verbinde durchdachte Gestaltung mit sauberer Umsetzung – und einer guten Portion Neugier.",
+      "sheet_portrait": null,
+      "sheet_portrait_alt": "Die Person hinter Lucky Dice Design",
+      "sheet_portrait_placeholder": "Hier ist Platz für mein Bild.",
+      "sheet_portrait_caption": "Die Person hinter den Pixeln",
+      "sheet_identity_label": "Mein Charakter",
+      "sheet_identity": [
+        {
+          "title": "Klasse",
+          "text": "Designer / Frontend"
+        },
+        {
+          "title": "Spielstil",
+          "text": "Neugierig. Klar. Systematisch."
+        },
+        {
+          "title": "Mission",
+          "text": "Digitale Auftritte, die sich richtig anfühlen."
+        }
+      ],
+      "sheet_roll_label": "Entdeckungswurf",
+      "sheet_dice_label": "Interaktiver zwanzigseitiger Würfel",
+      "sheet_dice_hint": "1 ist ein Patzer. 20 schaltet eine Bonus-Quest frei.",
+      "sheet_roll_result_label": "Dein Wurf",
+      "sheet_roll_pending_label": "Der Würfel rollt …",
+      "sheet_roll_bonus_label": "Bonus-Quest: Der 60-Sekunden-Designcheck",
+      "sheet_roll_outcomes": [
+        {
+          "min": 1,
+          "max": 1,
+          "title": "Kritischer Patzer!",
+          "text": "Du wolltest das Layout retten und hast die ganze Ebene verschoben. Zum Glück ist Strg + Z Teil meines Inventars. Noch mal würfeln?",
+          "target": "inventory"
+        },
+        {
+          "min": 2,
+          "max": 5,
+          "title": "Knapp am Chaos vorbei.",
+          "text": "Dein Button hat sich um einen Pixel verschoben. Du siehst es. Ich sehe es. Wir wissen beide, dass wir das noch korrigieren.",
+          "target": "skills"
+        },
+        {
+          "min": 6,
+          "max": 10,
+          "title": "Wahrnehmungsprobe bestanden.",
+          "text": "Du hast einen versteckten Pfad entdeckt. Die Nebenquests führen dich zu der persönlichen Seite hinter den Interfaces.",
+          "target": "personal"
+        },
+        {
+          "min": 11,
+          "max": 15,
+          "title": "Gelungener Designwurf.",
+          "text": "Struktur gefunden, Chaos gebändigt. Du erhältst einen Einblick in die Fähigkeiten hinter den Interfaces.",
+          "target": "skills"
+        },
+        {
+          "min": 16,
+          "max": 19,
+          "title": "Fast schon legendär.",
+          "text": "Dein Blick fürs Detail hat angeschlagen. Du entdeckst das Inventar, mit dem aus guten Ideen durchdachte Interfaces werden.",
+          "target": "inventory"
+        },
+        {
+          "min": 20,
+          "max": 20,
+          "title": "Natürliche 20. Kritischer Erfolg!",
+          "text": "Du hast eine geheime Bonus-Quest freigeschaltet: einen kleinen Designcheck für deine eigene Website. Dein Loot wartet direkt hier.",
+          "target": "quests",
+          "bonus_text": "Nimm dir eine Minute und öffne deine Startseite.\n\n01 · Ist in fünf Sekunden klar, was du anbietest und für wen?\n02 · Gibt es einen eindeutigen nächsten Schritt?\n03 · Kannst du diesen Schritt auf dem Handy bequem mit dem Daumen erreichen?\n\nDreimal ja? Quest bestanden. Wenn nicht: Du hast gerade den ersten Ansatz für dein nächstes Upgrade gefunden."
+        }
+      ],
+      "sheet_discovery_label": "Einblick freigeschaltet",
+      "sheet_discovery_link": "Mehr entdecken",
+      "sheet_discoveries": [
+        {
+          "title": "Meine Haltung",
+          "text": "Gute Gestaltung macht Komplexes verständlich.",
+          "target": "skills"
+        },
+        {
+          "title": "Meine Arbeitsweise",
+          "text": "Erst zuhören. Dann die richtigen Dinge gestalten.",
+          "target": "inventory"
+        },
+        {
+          "title": "Meine Werkzeuge",
+          "text": "Die beste Methode ist die, die dein Projekt weiterbringt.",
+          "target": "inventory"
+        },
+        {
+          "title": "Abseits des Bildschirms",
+          "text": "Hinter jedem Interface steht ein Mensch. Hier gibt es Raum für die persönliche Seite.",
+          "target": "personal"
+        }
+      ],
+      "sheet_skills_title": "Fähigkeiten",
+      "sheet_skills_hint": "Öffnen für Einblicke & Arbeitsproben",
+      "sheet_skills": [
+        {
+          "title": "UI/UX Design",
+          "text": "Ich bringe Inhalte, Struktur und Gestaltung zusammen. Damit Menschen sich zurechtfinden und Marken ihren eigenen Ausdruck bekommen.",
+          "link_label": "Arbeitsproben ansehen",
+          "url": "/work/",
+          "icon": "layout"
+        },
+        {
+          "title": "Frontend",
+          "text": "Aus einem Entwurf wird ein Interface, das auf kleinen wie großen Bildschirmen funktioniert. Mit Sorgfalt für Details, Zugänglichkeit und Performance.",
+          "link_label": "Projekte entdecken",
+          "url": "/work/",
+          "icon": "code"
+        },
+        {
+          "title": "SEO & KI Analyse",
+          "text": "Ich schaue auf Inhalte, Suchintention und technische Grundlagen. Daraus entstehen klare nächste Schritte für bessere Auffindbarkeit.",
+          "link_label": "Darüber sprechen",
+          "url": "/contact/",
+          "icon": "chart"
+        },
+        {
+          "title": "E-Mail Design",
+          "text": "Newsletter und Kampagnen, die zur Marke passen – mit klarer Hierarchie und einer Umsetzung für unterschiedliche E-Mail-Clients.",
+          "link_label": "Projekt besprechen",
+          "url": "/contact/",
+          "icon": "mail"
+        }
+      ],
+      "sheet_inventory_title": "Inventar",
+      "sheet_inventory": [
+        {
+          "title": "Designsystem",
+          "text": "Konsistent. Flexibel. Weitergedacht.",
+          "icon": "layers"
+        },
+        {
+          "title": "Code",
+          "text": "Sauber. Zugänglich. Durchdacht.",
+          "icon": "code"
+        },
+        {
+          "title": "Analyse",
+          "text": "Verstehen, bevor wir verändern.",
+          "icon": "chart"
+        },
+        {
+          "title": "Prototyp",
+          "text": "Ideen erlebbar machen.",
+          "icon": "cube"
+        }
+      ],
+      "sheet_approach_title": "So arbeite ich",
+      "sheet_approach": [
+        {
+          "title": "Zuhören",
+          "text": "Verstehen, was wirklich gebraucht wird.",
+          "icon": "listen"
+        },
+        {
+          "title": "Struktur schaffen",
+          "text": "Komplexes ordnen. Klarheit herstellen.",
+          "icon": "compass"
+        },
+        {
+          "title": "Details verfeinern",
+          "text": "Das Ganze sehen. Im Kleinen sorgfältig sein.",
+          "icon": "spark"
+        }
+      ],
+      "sheet_quests_title": "Questlog",
+      "sheet_projects_tab": "Projekte",
+      "sheet_process_tab": "Mein Prozess",
+      "sheet_project_link": "Projekt ansehen",
+      "sheet_project_empty": "Neue Projekte sind in Vorbereitung.",
+      "sheet_next_title": "Dein nächstes Projekt",
+      "sheet_next_text": "Neue Ideen. Spannende Herausforderungen. Gemeinsam gestalten.",
+      "sheet_next_link": "Gemeinsam starten",
+      "sheet_personal_title": "Nebenquests",
+      "sheet_personal_intro": "Am Spieltisch, auf dem Rennrad, im Schnee oder im nächsten Game – hier geht die Geschichte weiter.",
+      "sheet_personal_open_label": "Geschichte entdecken",
+      "sheet_personal": [
+        {
+          "title": "Pen & Paper",
+          "teaser": "Neue Welten. Gemeinsame Geschichten.",
+          "text": "Pen & Paper gehört zu meinen Nebenquests. Gemeinsam Geschichten entwickeln, Entscheidungen treffen und schauen, wohin der nächste Würfelwurf führt.",
+          "icon": "dice"
+        },
+        {
+          "title": "Rennrad",
+          "teaser": "Rad am Ring · Cyclassics Hamburg",
+          "text": "Auf dem Rennrad gehören Rad am Ring und die Cyclassics in Hamburg zu meinen Nebenquests. Bei Rad am Ring gehören für mich die Ammersee Wadler dazu.",
+          "icon": "bike",
+          "link_label": "Ammersee Wadler",
+          "url": ""
+        },
+        {
+          "title": "Snowboardlehrer",
+          "teaser": "Perspektivwechsel auf Schnee.",
+          "text": "Neben Design und Code bin ich auch als Snowboardlehrer unterwegs. Ein anderer Ort, um Wissen weiterzugeben und Menschen beim nächsten Schritt zu begleiten.",
+          "icon": "mountain"
+        },
+        {
+          "title": "Gaming",
+          "teaser": "Die nächste Runde wartet.",
+          "text": "Gaming gehört für mich dazu. Auf Twitch geht die Nebenquest weiter – schau gern vorbei.",
+          "icon": "gamepad",
+          "twitch": true
+        }
+      ],
+      "sheet_twitch_channel": "mrjokytv",
+      "sheet_twitch_link_label": "Auf Twitch vorbeischauen",
+      "sheet_twitch_load_label": "Twitch-Player laden",
+      "sheet_twitch_notice": "Erst beim Laden des Players wird eine Verbindung zu Twitch hergestellt.",
+      "sheet_twitch_player_title": "Twitch-Stream",
+      "sheet_personal_empty": "Hier teile ich bald mehr über mich und das, was mich inspiriert.",
+      "sheet_cta_eyebrow": "Bereit für ein gemeinsames Projekt?",
+      "sheet_cta_title": "Auf zur nächsten Quest.",
+      "sheet_cta_text": "Eine Idee reicht für den Anfang.",
+      "sheet_cta_label": "Projekt besprechen",
+      "sheet_cta_url": "/contact/",
+      "sheet_brand_label": "Lucky Dice Design",
+      "sheet_menu_label": "Menü öffnen oder schließen",
+      "sheet_navigation_label": "Hauptnavigation",
+      "sheet_theme_label": "Farbschema wechseln",
+      "sheet_light_label": "Light",
+      "sheet_dark_label": "Dark",
+      "sheet_legal_label": "Impressum",
+      "sheet_privacy_label": "Datenschutz"
+    }
+  }
 }

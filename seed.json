@@ -32,7 +32,238 @@
       "slug": "about",
       "status": "published",
       "title": "Design mit Struktur, Frontend mit Gefühl, Analyse mit Plan.",
-      "text": "Ich baue digitale Auftritte für Menschen, die nicht zwischen schön, verständlich und funktional wählen wollen. Lucky Dice Design steht für klare Entscheidungen, feine Linien und Interfaces, die im Alltag funktionieren."
+      "text": "Ich baue digitale Auftritte für Menschen, die nicht zwischen schön, verständlich und funktional wählen wollen. Lucky Dice Design steht für klare Entscheidungen, feine Linien und Interfaces, die im Alltag funktionieren.",
+      "meta_title": "About me | Lucky Dice Design",
+      "meta_description": "Lerne die Person, die Haltung und die Arbeitsweise hinter Lucky Dice Design kennen.",
+      "sheet_eyebrow": "Charakterbogen / Lucky Dice Design",
+      "sheet_title": "Kreativer Kopf.\nKlarer Kompass.",
+      "sheet_intro": "Lerne die Person hinter den Interfaces kennen. Ich verbinde durchdachte Gestaltung mit sauberer Umsetzung – und einer guten Portion Neugier.",
+      "sheet_portrait": null,
+      "sheet_portrait_alt": "Die Person hinter Lucky Dice Design",
+      "sheet_portrait_placeholder": "Hier ist Platz für mein Bild.",
+      "sheet_portrait_caption": "Die Person hinter den Pixeln",
+      "sheet_identity_label": "Mein Charakter",
+      "sheet_identity": [
+        {
+          "title": "Klasse",
+          "text": "Designer / Frontend"
+        },
+        {
+          "title": "Spielstil",
+          "text": "Neugierig. Klar. Systematisch."
+        },
+        {
+          "title": "Mission",
+          "text": "Digitale Auftritte, die sich richtig anfühlen."
+        }
+      ],
+      "sheet_roll_label": "Entdeckungswurf",
+      "sheet_dice_label": "Interaktiver zwanzigseitiger Würfel",
+      "sheet_dice_hint": "1 ist ein Patzer. 20 schaltet eine Bonus-Quest frei.",
+      "sheet_roll_result_label": "Dein Wurf",
+      "sheet_roll_pending_label": "Der Würfel rollt …",
+      "sheet_roll_bonus_label": "Bonus-Quest: Der 60-Sekunden-Designcheck",
+      "sheet_roll_outcomes": [
+        {
+          "min": 1,
+          "max": 1,
+          "title": "Kritischer Patzer!",
+          "text": "Du wolltest das Layout retten und hast die ganze Ebene verschoben. Zum Glück ist Strg + Z Teil meines Inventars. Noch mal würfeln?",
+          "target": "inventory"
+        },
+        {
+          "min": 2,
+          "max": 5,
+          "title": "Knapp am Chaos vorbei.",
+          "text": "Dein Button hat sich um einen Pixel verschoben. Du siehst es. Ich sehe es. Wir wissen beide, dass wir das noch korrigieren.",
+          "target": "skills"
+        },
+        {
+          "min": 6,
+          "max": 10,
+          "title": "Wahrnehmungsprobe bestanden.",
+          "text": "Du hast einen versteckten Pfad entdeckt. Die Nebenquests führen dich zu der persönlichen Seite hinter den Interfaces.",
+          "target": "personal"
+        },
+        {
+          "min": 11,
+          "max": 15,
+          "title": "Gelungener Designwurf.",
+          "text": "Struktur gefunden, Chaos gebändigt. Du erhältst einen Einblick in die Fähigkeiten hinter den Interfaces.",
+          "target": "skills"
+        },
+        {
+          "min": 16,
+          "max": 19,
+          "title": "Fast schon legendär.",
+          "text": "Dein Blick fürs Detail hat angeschlagen. Du entdeckst das Inventar, mit dem aus guten Ideen durchdachte Interfaces werden.",
+          "target": "inventory"
+        },
+        {
+          "min": 20,
+          "max": 20,
+          "title": "Natürliche 20. Kritischer Erfolg!",
+          "text": "Du hast eine geheime Bonus-Quest freigeschaltet: einen kleinen Designcheck für deine eigene Website. Dein Loot wartet direkt hier.",
+          "target": "quests",
+          "bonus_text": "Nimm dir eine Minute und öffne deine Startseite.\n\n01 · Ist in fünf Sekunden klar, was du anbietest und für wen?\n02 · Gibt es einen eindeutigen nächsten Schritt?\n03 · Kannst du diesen Schritt auf dem Handy bequem mit dem Daumen erreichen?\n\nDreimal ja? Quest bestanden. Wenn nicht: Du hast gerade den ersten Ansatz für dein nächstes Upgrade gefunden."
+        }
+      ],
+      "sheet_discovery_label": "Einblick freigeschaltet",
+      "sheet_discovery_link": "Mehr entdecken",
+      "sheet_discoveries": [
+        {
+          "title": "Meine Haltung",
+          "text": "Gute Gestaltung macht Komplexes verständlich.",
+          "target": "skills"
+        },
+        {
+          "title": "Meine Arbeitsweise",
+          "text": "Erst zuhören. Dann die richtigen Dinge gestalten.",
+          "target": "inventory"
+        },
+        {
+          "title": "Meine Werkzeuge",
+          "text": "Die beste Methode ist die, die dein Projekt weiterbringt.",
+          "target": "inventory"
+        },
+        {
+          "title": "Abseits des Bildschirms",
+          "text": "Hinter jedem Interface steht ein Mensch. Hier gibt es Raum für die persönliche Seite.",
+          "target": "personal"
+        }
+      ],
+      "sheet_skills_title": "Fähigkeiten",
+      "sheet_skills_hint": "Öffnen für Einblicke & Arbeitsproben",
+      "sheet_skills": [
+        {
+          "title": "UI/UX Design",
+          "text": "Ich bringe Inhalte, Struktur und Gestaltung zusammen. Damit Menschen sich zurechtfinden und Marken ihren eigenen Ausdruck bekommen.",
+          "link_label": "Arbeitsproben ansehen",
+          "url": "/work/",
+          "icon": "layout"
+        },
+        {
+          "title": "Frontend",
+          "text": "Aus einem Entwurf wird ein Interface, das auf kleinen wie großen Bildschirmen funktioniert. Mit Sorgfalt für Details, Zugänglichkeit und Performance.",
+          "link_label": "Projekte entdecken",
+          "url": "/work/",
+          "icon": "code"
+        },
+        {
+          "title": "SEO & KI Analyse",
+          "text": "Ich schaue auf Inhalte, Suchintention und technische Grundlagen. Daraus entstehen klare nächste Schritte für bessere Auffindbarkeit.",
+          "link_label": "Darüber sprechen",
+          "url": "/contact/",
+          "icon": "chart"
+        },
+        {
+          "title": "E-Mail Design",
+          "text": "Newsletter und Kampagnen, die zur Marke passen – mit klarer Hierarchie und einer Umsetzung für unterschiedliche E-Mail-Clients.",
+          "link_label": "Projekt besprechen",
+          "url": "/contact/",
+          "icon": "mail"
+        }
+      ],
+      "sheet_inventory_title": "Inventar",
+      "sheet_inventory": [
+        {
+          "title": "Designsystem",
+          "text": "Konsistent. Flexibel. Weitergedacht.",
+          "icon": "layers"
+        },
+        {
+          "title": "Code",
+          "text": "Sauber. Zugänglich. Durchdacht.",
+          "icon": "code"
+        },
+        {
+          "title": "Analyse",
+          "text": "Verstehen, bevor wir verändern.",
+          "icon": "chart"
+        },
+        {
+          "title": "Prototyp",
+          "text": "Ideen erlebbar machen.",
+          "icon": "cube"
+        }
+      ],
+      "sheet_approach_title": "So arbeite ich",
+      "sheet_approach": [
+        {
+          "title": "Zuhören",
+          "text": "Verstehen, was wirklich gebraucht wird.",
+          "icon": "listen"
+        },
+        {
+          "title": "Struktur schaffen",
+          "text": "Komplexes ordnen. Klarheit herstellen.",
+          "icon": "compass"
+        },
+        {
+          "title": "Details verfeinern",
+          "text": "Das Ganze sehen. Im Kleinen sorgfältig sein.",
+          "icon": "spark"
+        }
+      ],
+      "sheet_quests_title": "Questlog",
+      "sheet_projects_tab": "Projekte",
+      "sheet_process_tab": "Mein Prozess",
+      "sheet_project_link": "Projekt ansehen",
+      "sheet_project_empty": "Neue Projekte sind in Vorbereitung.",
+      "sheet_next_title": "Dein nächstes Projekt",
+      "sheet_next_text": "Neue Ideen. Spannende Herausforderungen. Gemeinsam gestalten.",
+      "sheet_next_link": "Gemeinsam starten",
+      "sheet_personal_title": "Nebenquests",
+      "sheet_personal_intro": "Am Spieltisch, auf dem Rennrad, im Schnee oder im nächsten Game – hier geht die Geschichte weiter.",
+      "sheet_personal_open_label": "Geschichte entdecken",
+      "sheet_personal": [
+        {
+          "title": "Pen & Paper",
+          "teaser": "Neue Welten. Gemeinsame Geschichten.",
+          "text": "Pen & Paper gehört zu meinen Nebenquests. Gemeinsam Geschichten entwickeln, Entscheidungen treffen und schauen, wohin der nächste Würfelwurf führt.",
+          "icon": "dice"
+        },
+        {
+          "title": "Rennrad",
+          "teaser": "Rad am Ring · Cyclassics Hamburg",
+          "text": "Auf dem Rennrad gehören Rad am Ring und die Cyclassics in Hamburg zu meinen Nebenquests. Bei Rad am Ring gehören für mich die Ammersee Wadler dazu.",
+          "icon": "bike",
+          "link_label": "Ammersee Wadler",
+          "url": ""
+        },
+        {
+          "title": "Snowboardlehrer",
+          "teaser": "Perspektivwechsel auf Schnee.",
+          "text": "Neben Design und Code bin ich auch als Snowboardlehrer unterwegs. Ein anderer Ort, um Wissen weiterzugeben und Menschen beim nächsten Schritt zu begleiten.",
+          "icon": "mountain"
+        },
+        {
+          "title": "Gaming",
+          "teaser": "Die nächste Runde wartet.",
+          "text": "Gaming gehört für mich dazu. Auf Twitch geht die Nebenquest weiter – schau gern vorbei.",
+          "icon": "gamepad",
+          "twitch": true
+        }
+      ],
+      "sheet_twitch_channel": "mrjokytv",
+      "sheet_twitch_link_label": "Auf Twitch vorbeischauen",
+      "sheet_twitch_load_label": "Twitch-Player laden",
+      "sheet_twitch_notice": "Erst beim Laden des Players wird eine Verbindung zu Twitch hergestellt.",
+      "sheet_twitch_player_title": "Twitch-Stream",
+      "sheet_personal_empty": "Hier teile ich bald mehr über mich und das, was mich inspiriert.",
+      "sheet_cta_eyebrow": "Bereit für ein gemeinsames Projekt?",
+      "sheet_cta_title": "Auf zur nächsten Quest.",
+      "sheet_cta_text": "Eine Idee reicht für den Anfang.",
+      "sheet_cta_label": "Projekt besprechen",
+      "sheet_cta_url": "/contact/",
+      "sheet_brand_label": "Lucky Dice Design",
+      "sheet_menu_label": "Menü öffnen oder schließen",
+      "sheet_navigation_label": "Hauptnavigation",
+      "sheet_theme_label": "Farbschema wechseln",
+      "sheet_light_label": "Light",
+      "sheet_dark_label": "Dark",
+      "sheet_legal_label": "Impressum",
+      "sheet_privacy_label": "Datenschutz"
     },
     {
       "slug": "contact",

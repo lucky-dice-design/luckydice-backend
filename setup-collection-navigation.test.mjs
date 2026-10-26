@@ -125,3 +125,49 @@ test("navigation covers each content collection in the schema exactly once", () 
   assert.equal(names.length, new Set(names).size);
   assert.deepEqual([...names].sort(), schema.collections.map((item) => item.collection).sort());
 });
+
+test('Docker installer bootstraps About editors, preserves edited copy and is repeatable', async () => {
+  const schema = JSON.parse(fs.readFileSync(new URL('./schema.json', import.meta.url), 'utf8'));
+  const source = fs.readFileSync(new URL('./setup.mjs', import.meta.url), 'utf8');
+  const start = source.indexOf('async function installAbout(api) {');
+  const end = source.indexOf('\nawait installAbout(api);', start);
+  assert.ok(start > 0 && end > start);
+  const { runInNewContext } = await import('node:vm');
+  const install = runInNewContext(source.slice(start, end) + '\ninstallAbout', { schema, URL, encodeURIComponent });
+  const fields = schema.collections.find(item => item.collection === 'pages').fields.map(item => ({ ...item }));
+  const fileFields = [], relations = [];
+  const page = { id: 3, slug: 'about', sheet_title: 'Mein eigener Text', sheet_personal: [] };
+  const grants = [
+    { id: 1, collection: 'pages', action: 'read', fields: ['*'] },
+    { id: 2, collection: 'directus_files', action: 'read', fields: ['*'], permissions: { lucky_project_screenshots: { _some: { status: { _eq: 'published' } } } } }
+  ];
+  const writes = [];
+  const api = async (path, method = 'GET', body) => {
+    body = body && structuredClone(body);
+    if (method !== 'GET') writes.push({ path, method, body });
+    if (path === '/fields/pages' && method === 'POST') { fields.push(body); return body; }
+    if (path.startsWith('/fields/pages/') && method === 'PATCH') { const field = fields.find(item => item.field === path.split('/').at(-1)); field.meta = { ...field.meta, ...body.meta }; return field; }
+    if (path === '/fields/directus_files' && method === 'POST') { fileFields.push(body); return body; }
+    if (path === '/relations' && method === 'POST') { relations.push(body); return body; }
+    if (path.startsWith('/permissions/') && method === 'PATCH') { Object.assign(grants.find(item => item.id === Number(path.split('/').at(-1))), body); return null; }
+    if (path === '/items/pages/3' && method === 'PATCH') { Object.assign(page, body); return page; }
+    if (path === '/fields/pages') return fields;
+    if (path === '/fields/directus_files') return fileFields;
+    if (path === '/relations') return relations;
+    if (path.startsWith('/policies?')) return [{ id: 'website-policy', name: 'Lucky Website', admin_access: false, app_access: false }];
+    if (path.startsWith('/permissions?')) return grants;
+    if (path.startsWith('/items/pages?')) return [page];
+    throw new Error('Unexpected request: ' + method + ' ' + path);
+  };
+  await install(api);
+  assert.equal(page.sheet_title, 'Mein eigener Text');
+  assert.deepEqual(page.sheet_personal, []);
+  assert.ok(page.sheet_roll_outcomes.some(item => item.min === 20 && item.bonus_text));
+  assert.equal(fields.find(item => item.field === 'sheet_portrait').meta.interface, 'file-image');
+  assert.equal(fields.find(item => item.field === 'sheet_personal').meta.interface, 'list');
+  assert.equal(relations[0].related_collection, 'directus_files');
+  assert.equal(grants[1].permissions._or[1]._and[1].lucky_about_portraits._some.status._eq, 'published');
+  writes.length = 0;
+  await install(api);
+  assert.deepEqual(writes, []);
+});

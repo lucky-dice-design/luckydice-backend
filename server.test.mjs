@@ -17,6 +17,14 @@ test('gateway restricts contact fields and protects stored requests', async t =>
   fs.writeFileSync(path.join(tmp, 'assets/content.js'), 'export const fallbackContent = { projects: [{ slug: "offline-project", title: "Offline project" }] };');
   const writes = [];
   const reads = [];
+  const aboutData = {
+    slug: 'about', status: 'published', title: 'About', sheet_title: 'Meine Seite',
+    sheet_portrait: '11111111-1111-4111-8111-111111111111',
+    sheet_personal: [{ title: 'Rennrad', teaser: 'Ammersee', text: 'Meine Geschichte', url: '', twitch: false, private_notes: 'hidden' }],
+    sheet_roll_outcomes: [{ min: 20, max: 20, title: 'Bonus', text: 'Kritisch', target: 'personal', bonus_text: 'Mein Bonus', private_notes: 'hidden' }],
+    sheet_twitch_channel: 'mrjokytv', private_notes: 'hidden'
+  };
+  let aboutOverride;
   const upstream = http.createServer(async (req, res) => {
     assert.equal(req.headers.authorization, 'Bearer test-server-token');
     let raw = ''; for await (const chunk of req) raw += chunk;
@@ -42,8 +50,9 @@ test('gateway restricts contact fields and protects stored requests', async t =>
       if (slug === 'invalid-json') return res.end('not JSON');
       if (slug === 'too-many') return res.end(JSON.stringify({ data: Array.from({ length: 101 }, () => ({ status: 'published' })) }));
       if (slug === 'nested-relation') return res.end(JSON.stringify({ data: [{ status: 'published', text: { confidential: 'hidden' } }] }));
+      if (slug === 'about') return res.end(JSON.stringify({ data: [{ ...aboutData, ...aboutOverride }] }));
       if (slug === null) return res.end(JSON.stringify({ data: ['home', 'work', 'about', 'contact', 'impressum', 'datenschutz']
-        .map(slug => ({ slug, title: 'Public page', status: 'published', private_notes: 'hidden' })) }));
+        .map(slug => slug === 'about' ? aboutData : ({ slug, title: 'Public page', status: 'published', private_notes: 'hidden', sheet_title: 'Not public on another page' })) }));
       return res.end(JSON.stringify({ data: [{ slug, title: 'Public page', status: slug === 'draft-item' ? 'draft' : 'published', private_notes: 'hidden' }], meta: { internal: 'hidden' } }));
     }
     if (req.url.startsWith('/items/projects?')) {
@@ -112,6 +121,27 @@ test('gateway restricts contact fields and protects stored requests', async t =>
       }
     });
 
+    await t.test('About copy, portrait IDs and flat repeater keys survive the public gateway', async () => {
+      const response = await fetch(base + '/cms/items/pages?filter[slug][_eq]=about&limit=1');
+      assert.equal(response.status, 200);
+      const page = (await response.json()).data[0];
+      assert.equal(page.sheet_title, 'Meine Seite');
+      assert.equal(page.sheet_portrait, aboutData.sheet_portrait);
+      assert.equal(page.sheet_personal[0].title, 'Rennrad');
+      assert.equal(page.sheet_roll_outcomes[0].bonus_text, 'Mein Bonus');
+      assert.equal(page.sheet_twitch_channel, 'mrjokytv');
+      assert.ok(!JSON.stringify(page).includes('private_notes'));
+      assert.ok(!reads.at(-1).searchParams.get('fields').includes('*'));
+    });
+    await t.test('About lists remain bounded and reject relation expansion inside known fields', async () => {
+      for (const value of [[{ title: { confidential: 'hidden' } }], [null], Array.from({ length: 101 }, () => ({ title: 'x' })), { title: 'wrong type' }]) {
+        aboutOverride = { sheet_personal: value };
+        const response = await fetch(base + '/cms/items/pages?filter[slug][_eq]=about');
+        assert.equal(response.status, 502);
+        assert.ok(!(await response.text()).includes('confidential'));
+      }
+      aboutOverride = undefined;
+    });
     await t.test('field expansion, arbitrary filters, duplicates and unbounded pagination never reach CMS', async () => {
       const before = reads.length;
       for (const query of ['fields=*', 'fields=*,screenshot.*', 'deep[x][_limit]=-1', 'aggregate[count]=*',
@@ -159,6 +189,9 @@ test('gateway restricts contact fields and protects stored requests', async t =>
       assert.equal(content.settings.site_name, 'Lucky Dice');
       assert.equal(Object.keys(content.pages).length, 6);
       assert.equal(content.navigation[0].url, '/');
+      assert.equal(content.pages.about.sheet_personal[0].title, 'Rennrad');
+      assert.equal(content.pages.about.sheet_roll_outcomes[0].bonus_text, 'Mein Bonus');
+      assert.equal(content.pages.home.sheet_title, undefined);
       assert.ok(!output.includes('private_notes'));
       assert.ok(!output.includes('test-server-token'));
     });
