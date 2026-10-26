@@ -135,6 +135,8 @@ test('Docker installer bootstraps About editors, preserves edited copy and is re
   const { runInNewContext } = await import('node:vm');
   const install = runInNewContext(source.slice(start, end) + '\ninstallAbout', { schema, URL, encodeURIComponent });
   const fields = schema.collections.find(item => item.collection === 'pages').fields.map(item => ({ ...item }));
+  const retired = schema.about_bootstrap.retired_fields;
+  fields.push(...retired.map(field => ({ field, type: 'text' })));
   const fileFields = [], relations = [];
   const page = { id: 3, slug: 'about', sheet_title: 'Mein eigener Text', sheet_personal: [] };
   const grants = [
@@ -146,6 +148,7 @@ test('Docker installer bootstraps About editors, preserves edited copy and is re
     body = body && structuredClone(body);
     if (method !== 'GET') writes.push({ path, method, body });
     if (path === '/fields/pages' && method === 'POST') { fields.push(body); return body; }
+    if (path.startsWith('/fields/pages/') && method === 'DELETE') { const name = path.split('/').at(-1); fields.splice(fields.findIndex(item => item.field === name), 1); delete page[name]; return null; }
     if (path.startsWith('/fields/pages/') && method === 'PATCH') { const field = fields.find(item => item.field === path.split('/').at(-1)); field.meta = { ...field.meta, ...body.meta }; return field; }
     if (path === '/fields/directus_files' && method === 'POST') { fileFields.push(body); return body; }
     if (path === '/relations' && method === 'POST') { relations.push(body); return body; }
@@ -160,6 +163,11 @@ test('Docker installer bootstraps About editors, preserves edited copy and is re
     throw new Error('Unexpected request: ' + method + ' ' + path);
   };
   await install(api);
+  assert.equal(retired.length, 10);
+  assert.deepEqual(writes.filter(item => item.method === 'DELETE').map(item => item.path), retired.map(name => '/fields/pages/' + name));
+  assert.ok(fields.some(item => item.field === 'title'));
+  assert.ok(!retired.some(name => fields.some(item => item.field === name)));
+  assert.ok(!retired.some(name => schema.collections.find(item => item.collection === 'pages').fields.some(item => item.field === name)));
   assert.equal(page.sheet_title, 'Mein eigener Text');
   assert.deepEqual(page.sheet_personal, []);
   assert.ok(page.sheet_roll_outcomes.some(item => item.min === 20 && item.bonus_text));

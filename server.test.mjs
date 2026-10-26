@@ -22,7 +22,7 @@ test('gateway restricts contact fields and protects stored requests', async t =>
     sheet_portrait: '11111111-1111-4111-8111-111111111111',
     sheet_personal: [{ title: 'Rennrad', teaser: 'Ammersee', text: 'Meine Geschichte', url: '', twitch: false, private_notes: 'hidden' }],
     sheet_roll_outcomes: [{ min: 20, max: 20, title: 'Bonus', text: 'Kritisch', target: 'personal', bonus_text: 'Mein Bonus', private_notes: 'hidden' }],
-    sheet_twitch_channel: 'mrjokytv', private_notes: 'hidden'
+    sheet_twitch_channel: 'mrjokytv', sheet_dice_hint: 'Retired', sheet_quests_title: 'Retired', private_notes: 'hidden'
   };
   let aboutOverride;
   const upstream = http.createServer(async (req, res) => {
@@ -126,6 +126,10 @@ test('gateway restricts contact fields and protects stored requests', async t =>
       assert.equal(response.status, 200);
       const page = (await response.json()).data[0];
       assert.equal(page.sheet_title, 'Meine Seite');
+      assert.equal(page.sheet_dice_hint, undefined);
+      assert.equal(page.sheet_quests_title, undefined);
+      assert.ok(!reads.at(-1).searchParams.get('fields').includes('sheet_dice_hint'));
+      assert.ok(!reads.at(-1).searchParams.get('fields').includes('sheet_quests_title'));
       assert.equal(page.sheet_portrait, aboutData.sheet_portrait);
       assert.equal(page.sheet_personal[0].title, 'Rennrad');
       assert.equal(page.sheet_roll_outcomes[0].bonus_text, 'Mein Bonus');

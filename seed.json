@@ -59,7 +59,6 @@
       ],
       "sheet_roll_label": "Entdeckungswurf",
       "sheet_dice_label": "Interaktiver zwanzigseitiger Würfel",
-      "sheet_dice_hint": "1 ist ein Patzer. 20 schaltet eine Bonus-Quest frei.",
       "sheet_roll_result_label": "Dein Wurf",
       "sheet_roll_pending_label": "Der Würfel rollt …",
       "sheet_roll_bonus_label": "Bonus-Quest: Der 60-Sekunden-Designcheck",
@@ -133,7 +132,6 @@
         }
       ],
       "sheet_skills_title": "Fähigkeiten",
-      "sheet_skills_hint": "Öffnen für Einblicke & Arbeitsproben",
       "sheet_skills": [
         {
           "title": "UI/UX Design",
@@ -205,14 +203,6 @@
           "icon": "spark"
         }
       ],
-      "sheet_quests_title": "Questlog",
-      "sheet_projects_tab": "Projekte",
-      "sheet_process_tab": "Mein Prozess",
-      "sheet_project_link": "Projekt ansehen",
-      "sheet_project_empty": "Neue Projekte sind in Vorbereitung.",
-      "sheet_next_title": "Dein nächstes Projekt",
-      "sheet_next_text": "Neue Ideen. Spannende Herausforderungen. Gemeinsam gestalten.",
-      "sheet_next_link": "Gemeinsam starten",
       "sheet_personal_title": "Nebenquests",
       "sheet_personal_intro": "Am Spieltisch, auf dem Rennrad, im Schnee oder im nächsten Game – hier geht die Geschichte weiter.",
       "sheet_personal_open_label": "Geschichte entdecken",
