@@ -12,12 +12,58 @@ const origins = new Set(['https://luckydicedesign.de', 'https://www.luckydicedes
 const publicFields = {
   site_settings: ['id', 'site_name', 'footer_note', 'email', 'instagram'],
   navigation_items: ['id', 'label', 'url', 'sort', 'status'],
-  pages: ['id', 'slug', 'status', 'meta_title', 'meta_description', 'title', 'text', 'legal_body', 'hero_title', 'hero_text', 'intro_title', 'intro_text'],
+  pages: ['id', 'slug', 'status', 'meta_title', 'meta_description', 'title', 'text', 'legal_body', 'hero_title', 'hero_text', 'intro_title', 'intro_text', 'sheet_eyebrow', 'sheet_title', 'sheet_intro', 'sheet_portrait', 'sheet_portrait_alt', 'sheet_portrait_placeholder', 'sheet_portrait_caption', 'sheet_identity_label', 'sheet_identity', 'sheet_roll_label', 'sheet_dice_label', 'sheet_dice_hint', 'sheet_roll_result_label', 'sheet_roll_pending_label', 'sheet_roll_bonus_label', 'sheet_roll_outcomes', 'sheet_discovery_label', 'sheet_discovery_link', 'sheet_discoveries', 'sheet_skills_title', 'sheet_skills_hint', 'sheet_skills', 'sheet_inventory_title', 'sheet_inventory', 'sheet_approach_title', 'sheet_approach', 'sheet_quests_title', 'sheet_projects_tab', 'sheet_process_tab', 'sheet_project_link', 'sheet_project_empty', 'sheet_next_title', 'sheet_next_text', 'sheet_next_link', 'sheet_personal_title', 'sheet_personal_intro', 'sheet_personal_open_label', 'sheet_personal', 'sheet_personal_empty', 'sheet_twitch_channel', 'sheet_twitch_link_label', 'sheet_twitch_load_label', 'sheet_twitch_notice', 'sheet_twitch_player_title', 'sheet_cta_eyebrow', 'sheet_cta_title', 'sheet_cta_text', 'sheet_cta_label', 'sheet_cta_url', 'sheet_brand_label', 'sheet_menu_label', 'sheet_navigation_label', 'sheet_theme_label', 'sheet_light_label', 'sheet_dark_label', 'sheet_legal_label', 'sheet_privacy_label'],
   services: ['id', 'status', 'sort', 'number', 'title', 'text'],
   projects: ['id', 'slug', 'website_url', 'detail_body', 'screenshot', 'screenshot_alt', 'status', 'sort', 'title', 'type', 'year', 'text', 'highlight'],
   about_facts: ['id', 'sort', 'label', 'value'],
   process_steps: ['id', 'sort', 'title', 'text'],
   contact_channels: ['id', 'sort', 'label', 'value', 'url'],
+};
+// Only these flat editorial keys may pass through JSON repeater fields.
+const aboutListFields = {
+  "sheet_identity": [
+    "title",
+    "text"
+  ],
+  "sheet_roll_outcomes": [
+    "min",
+    "max",
+    "title",
+    "text",
+    "target",
+    "bonus_text"
+  ],
+  "sheet_discoveries": [
+    "title",
+    "text",
+    "target"
+  ],
+  "sheet_skills": [
+    "title",
+    "text",
+    "link_label",
+    "url",
+    "icon"
+  ],
+  "sheet_inventory": [
+    "title",
+    "text",
+    "icon"
+  ],
+  "sheet_approach": [
+    "title",
+    "text",
+    "icon"
+  ],
+  "sheet_personal": [
+    "title",
+    "text",
+    "link_label",
+    "url",
+    "teaser",
+    "twitch",
+    "icon"
+  ]
 };
 const collections = new Set(Object.keys(publicFields));
 const publishedCollections = new Set(['navigation_items', 'pages', 'services', 'projects']);
@@ -90,7 +136,23 @@ function publicData(collection, data, limit) {
     const output = {};
     for (const field of publicFields[collection]) {
       if (!Object.hasOwn(item, field)) continue;
+      if (field.startsWith('sheet_') && item.slug !== 'about') continue;
       const value = item[field];
+      if (value !== null && aboutListFields[field]) {
+        if (!Array.isArray(value) || value.length > 100) throw new Error('Invalid About list');
+        output[field] = value.map(row => {
+          if (!row || typeof row !== 'object' || Array.isArray(row)) throw new Error('Invalid About entry');
+          const entry = {};
+          for (const key of aboutListFields[field]) {
+            if (!Object.hasOwn(row, key)) continue;
+            const cell = row[key];
+            if (cell !== null && !['string', 'number', 'boolean'].includes(typeof cell)) throw new Error('Unexpected About relation');
+            entry[key] = cell;
+          }
+          return entry;
+        });
+        continue;
+      }
       if (value !== null && !['string', 'number', 'boolean'].includes(typeof value)) throw new Error('Unexpected CMS relation');
       output[field] = value;
     }
